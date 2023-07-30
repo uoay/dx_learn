@@ -6,4 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED 17)
 
 add_definitions(-DUNICODE)
 
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
 add_subdirectory(src)
