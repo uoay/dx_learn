@@ -1,8 +1,11 @@
 #pragma once
 
+#include <memory>
+
 #include <windows.h>
 
 #include "Keyboard.h"
+#include "Graphics.h"
 
 class Window {
 private:
@@ -26,12 +29,14 @@ public:
     Window& operator=(const Window&) = delete;
 
     static std::optional<int> ProgressMessage();
+    Graphics& GetGraphics();
 private:
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 private:
     int width;
     int height;
     HWND hWnd;
+    std::unique_ptr<Graphics> graphics;
 public:
     Keyboard keyboard;
 };

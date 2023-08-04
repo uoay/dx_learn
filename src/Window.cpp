@@ -46,6 +46,7 @@ Window::Window(int width, int height, const wchar_t* wndName) :width(width), hei
         nullptr
     );
     ShowWindow(hWnd, SW_SHOWDEFAULT);
+    graphics = std::make_unique<Graphics>(hWnd);
 }
 
 Window::~Window() {
