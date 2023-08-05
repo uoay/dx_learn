@@ -17,7 +17,7 @@ Graphics::Graphics(HWND hWnd) {
 
 void Graphics::CreateDevice() {
 	ID3D12Device* tmpDevice = nullptr;
-	D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&tmpDevice));
+	D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&tmpDevice));
 	tmpDevice->QueryInterface(IID_PPV_ARGS(&device));
 	tmpDevice->Release();
 }
