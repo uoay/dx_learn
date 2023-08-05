@@ -6,7 +6,6 @@
 
 #include "Keyboard.h"
 #include "Graphics.h"
-#include "GameException.h"
 
 #define HWND_EXCEPTION(errorCode) Window::Exception(__FILE__, __LINE__, errorCode)
 #define HWND_LAST_EXCEPTION() Window::Exception(__FILE__, __LINE__, GetLastError())

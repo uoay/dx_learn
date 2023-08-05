@@ -1,5 +1,22 @@
 #include "Graphics.h"
 
+#include <sstream>
+
+Graphics::Exception::Exception(const char* file, int line, HRESULT errorCode) :GameException(file, line, errorCode) {}
+
+const char* Graphics::Exception::what() const noexcept {
+	std::ostringstream oss;
+	oss << "[Error Code]" << GetErrorCode() << std::endl
+		<< "[Description]" << GetErrorString() << std::endl
+		<< GetExceptionLocation();
+	whatBuffer = oss.str();
+	return whatBuffer.c_str();
+}
+
+const char* Graphics::Exception::GetType() const {
+	return "DirectX Exception";
+}
+
 Graphics::Graphics(HWND hWnd) {
 #ifndef NDEBUG
 	Microsoft::WRL::ComPtr<ID3D12Debug> debugController;
