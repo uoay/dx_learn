@@ -1,5 +1,4 @@
 #include "Graphics.h"
-#include <iostream>
 
 Graphics::Graphics(HWND hWnd) {
 #ifndef NDEBUG
@@ -17,15 +16,27 @@ Graphics::Graphics(HWND hWnd) {
 
 void Graphics::CreateDevice() {
 	ID3D12Device* tmpDevice = nullptr;
-	D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&tmpDevice));
-	tmpDevice->QueryInterface(IID_PPV_ARGS(&device));
+	HRESULT hr = D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&tmpDevice));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
+	hr = tmpDevice->QueryInterface(IID_PPV_ARGS(&device));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr)
+	}
 	tmpDevice->Release();
 }
 
 void Graphics::CreateFence() {
 	ID3D12Fence* tmpFence = nullptr;
-	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&tmpFence));
-	tmpFence->QueryInterface(IID_PPV_ARGS(&fence));
+	HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&tmpFence));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
+	hr = tmpFence->QueryInterface(IID_PPV_ARGS(&fence));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
 	tmpFence->Release();
 }
 
@@ -36,13 +47,25 @@ void Graphics::CreteCommandObjects() {
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	queueDesc.NodeMask = 0;
 
-	device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&cmdQueue));
-	
-	device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&cmdAllocator));
+	HRESULT hr = device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&cmdQueue));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
+
+	hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&cmdAllocator));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
 
 	ID3D12GraphicsCommandList* tmpCmdList = nullptr;
-	device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, cmdAllocator.Get(), nullptr, IID_PPV_ARGS(&tmpCmdList));
-	tmpCmdList->QueryInterface(IID_PPV_ARGS(&cmdList));
+	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, cmdAllocator.Get(), nullptr, IID_PPV_ARGS(&tmpCmdList));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
+	hr = tmpCmdList->QueryInterface(IID_PPV_ARGS(&cmdList));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
 	cmdList->Close();
 	tmpCmdList->Release();
 }
@@ -53,8 +76,14 @@ void Graphics::CreateFactory() {
 	dxgiFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
 #endif
 	IDXGIFactory2* tmpFactory = nullptr;
-	CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&tmpFactory));
-	tmpFactory->QueryInterface(IID_PPV_ARGS(&factory));
+	HRESULT hr = CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&tmpFactory));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
+	hr = tmpFactory->QueryInterface(IID_PPV_ARGS(&factory));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
 	tmpFactory->Release();
 }
 
@@ -73,8 +102,14 @@ void Graphics::CreateSwapChain(HWND hWnd) {
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 	swapChainDesc.Flags = 0;
-	factory->CreateSwapChainForHwnd(cmdQueue.Get(), hWnd, &swapChainDesc, nullptr, nullptr, &tmpSwapChain);
-	tmpSwapChain->QueryInterface(IID_PPV_ARGS(&swapChain));
+	HRESULT hr = factory->CreateSwapChainForHwnd(cmdQueue.Get(), hWnd, &swapChainDesc, nullptr, nullptr, &tmpSwapChain);
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
+	hr = tmpSwapChain->QueryInterface(IID_PPV_ARGS(&swapChain));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
 	tmpSwapChain->Release();
 }
 
@@ -86,11 +121,17 @@ void Graphics::CreateDescriptorHeap() {
 	rtvHeapDesc.NumDescriptors = bufferCount;
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	rtvHeapDesc.NodeMask = 0;
-	device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap));
+	HRESULT hr = device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	rtvHeapDesc.NumDescriptors = bufferCount;
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	rtvHeapDesc.NodeMask = 0;
-	device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&dsvHeap));
+	hr = device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&dsvHeap));
+	if (FAILED(hr)) {
+		throw GFX_EXPECTION(hr);
+	}
 }

@@ -1,5 +1,22 @@
 #include "Window.h"
 
+#include <sstream>
+
+Window::Exception::Exception(const char* file, int line, HRESULT errorCode) :GameException(file, line, errorCode) {}
+
+const char* Window::Exception::what() const noexcept {
+    std::ostringstream oss;
+    oss << "[Error Code]" << GetErrorCode() << std::endl
+        << "[Description]" << GetErrorString() << std::endl
+        << GetExceptionLocation();
+    whatBuffer = oss.str();
+    return whatBuffer.c_str();
+}
+
+const char* Window::Exception::GetType() const {
+    return "Game Window Exception";
+}
+
 Window::WindowClass Window::WindowClass::wndClass;
 
 Window::WindowClass::WindowClass() :hInstance(GetModuleHandle(nullptr)) {
@@ -46,6 +63,9 @@ Window::Window(int width, int height, const wchar_t* wndName) :width(width), hei
         nullptr
     );
     ShowWindow(hWnd, SW_SHOWDEFAULT);
+    if (hWnd == nullptr) {
+        throw HWND_LAST_EXCEPTION();
+    }
     graphics = std::make_unique<Graphics>(hWnd);
 }
 

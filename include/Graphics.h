@@ -4,11 +4,22 @@
 #include <dxgi1_6.h>
 #include <wrl.h>
 
+#include "GameException.h"
+
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
+#define GFX_EXPECTION(errorCode) Graphics::Exception(__FILE__, __LINE__, errorCode);
+
 class Graphics {
+public:
+    class Exception : public GameException {
+    public:
+        Exception(const char* file, int line, HRESULT errorCode);
+        virtual const char* what() const noexcept;
+        virtual const char* GetType() const;
+    };
 public:
     Graphics(HWND hwnd);
     Graphics(const Graphics&) = delete;
