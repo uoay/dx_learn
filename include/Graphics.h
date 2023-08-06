@@ -4,29 +4,13 @@
 #include <dxgi1_6.h>
 #include <wrl.h>
 
-#include "GameException.h"
-
-#define GFX_EXPECTION(errorCode) Graphics::Exception(__FILE__, __LINE__, errorCode);
+#include "GraphicsUtil.h"
 
 class Graphics {
-public:
-    class Exception : public GameException {
-    public:
-        Exception(const char* file, int line, HRESULT errorCode);
-        virtual const char* what() const noexcept;
-        virtual const char* GetType() const;
-    };
 public:
     Graphics(HWND hwnd);
     Graphics(const Graphics&) = delete;
     Graphics& operator=(const Graphics&) = delete;
-private:
-    void CreateDevice();
-    void CreateFence();
-    void CreteCommandObjects();
-    void CreateFactory();
-    void CreateSwapChain(HWND hwnd);
-    void CreateDescriptorHeap();
 private:
     static const unsigned int bufferCount = 2;
     int currBackBuffer = 0;

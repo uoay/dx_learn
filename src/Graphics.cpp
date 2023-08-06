@@ -2,110 +2,29 @@
 
 #include <sstream>
 
-Graphics::Exception::Exception(const char* file, int line, HRESULT errorCode) :GameException(file, line, errorCode) {}
-
-const char* Graphics::Exception::what() const noexcept {
-	std::ostringstream oss;
-	oss << "[Error Code]" << GetErrorCode() << std::endl
-		<< "[Description]" << GetErrorString() << std::endl
-		<< GetExceptionLocation();
-	whatBuffer = oss.str();
-	return whatBuffer.c_str();
-}
-
-const char* Graphics::Exception::GetType() const {
-	return "DirectX Exception";
-}
-
 Graphics::Graphics(HWND hWnd) {
 #ifndef NDEBUG
 	Microsoft::WRL::ComPtr<ID3D12Debug> debugController;
 	D3D12GetDebugInterface(IID_PPV_ARGS(&debugController));
 	debugController->EnableDebugLayer();
 #endif
-	CreateDevice();
-	CreateFence();
-	CreteCommandObjects();
-	CreateFactory();
-	CreateSwapChain(hWnd);
-	CreateDescriptorHeap();
-}
+	GraphicsUtil::CreateDevice(device);
 
-void Graphics::CreateDevice() {
-	ID3D12Device* tmpDevice = nullptr;
-	HRESULT hr = D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&tmpDevice));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-	hr = tmpDevice->QueryInterface(IID_PPV_ARGS(&device));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr)
-	}
-	tmpDevice->Release();
-}
+	GraphicsUtil::CreateFence(device, 0, D3D12_FENCE_FLAG_NONE, fence);
 
-void Graphics::CreateFence() {
-	ID3D12Fence* tmpFence = nullptr;
-	HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&tmpFence));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-	hr = tmpFence->QueryInterface(IID_PPV_ARGS(&fence));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-	tmpFence->Release();
-}
+	D3D12_COMMAND_QUEUE_DESC cmdQueueDesc{};
+	cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+	cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	cmdQueueDesc.NodeMask = 0;
+	GraphicsUtil::CreteCommandObjects(device, &cmdQueueDesc, cmdQueue, cmdAllocator, cmdList);
 
-void Graphics::CreteCommandObjects() {
-	D3D12_COMMAND_QUEUE_DESC queueDesc{};
-	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-	queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-	queueDesc.NodeMask = 0;
-
-	HRESULT hr = device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&cmdQueue));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-
-	hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&cmdAllocator));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-
-	ID3D12GraphicsCommandList* tmpCmdList = nullptr;
-	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, cmdAllocator.Get(), nullptr, IID_PPV_ARGS(&tmpCmdList));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-	hr = tmpCmdList->QueryInterface(IID_PPV_ARGS(&cmdList));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-	cmdList->Close();
-	tmpCmdList->Release();
-}
-
-void Graphics::CreateFactory() {
-	DWORD dxgiFactoryFlags = 0;
+	DWORD factoryFlags = 0;
 #ifndef NDEBUG
-	dxgiFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
+	factoryFlags = DXGI_CREATE_FACTORY_DEBUG;
 #endif
-	IDXGIFactory2* tmpFactory = nullptr;
-	HRESULT hr = CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&tmpFactory));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-	hr = tmpFactory->QueryInterface(IID_PPV_ARGS(&factory));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-	tmpFactory->Release();
-}
+	GraphicsUtil::CreateFactory(factoryFlags, factory);
 
-void Graphics::CreateSwapChain(HWND hWnd) {
-	IDXGISwapChain1* tmpSwapChain = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 	swapChainDesc.Width = 0;
 	swapChainDesc.Height = 0;
@@ -119,36 +38,21 @@ void Graphics::CreateSwapChain(HWND hWnd) {
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 	swapChainDesc.Flags = 0;
-	HRESULT hr = factory->CreateSwapChainForHwnd(cmdQueue.Get(), hWnd, &swapChainDesc, nullptr, nullptr, &tmpSwapChain);
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-	hr = tmpSwapChain->QueryInterface(IID_PPV_ARGS(&swapChain));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
-	tmpSwapChain->Release();
-}
+	GraphicsUtil::CreateSwapChain(factory, cmdQueue, hWnd, &swapChainDesc, nullptr, swapChain);
 
-void Graphics::CreateDescriptorHeap() {
 	rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	dsvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	rtvHeapDesc.NumDescriptors = bufferCount;
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	rtvHeapDesc.NodeMask = 0;
-	HRESULT hr = device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
+	GraphicsUtil::CreateRtvDescriptorHeap(device, &rtvHeapDesc, rtvHeap);
+	dsvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	rtvHeapDesc.NumDescriptors = bufferCount;
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	rtvHeapDesc.NodeMask = 0;
-	hr = device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&dsvHeap));
-	if (FAILED(hr)) {
-		throw GFX_EXPECTION(hr);
-	}
+	GraphicsUtil::CreateDsvDescriptorHeap(device, &dsvHeapDesc, dsvHeap);
 }
