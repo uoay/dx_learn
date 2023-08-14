@@ -4,11 +4,13 @@
 
 #include <windows.h>
 
-#include "Keyboard.h"
-#include "Graphics.h"
 
-#define HWND_EXCEPTION(errorCode) Window::Exception(__FILE__, __LINE__, errorCode)
-#define HWND_LAST_EXCEPTION() Window::Exception(__FILE__, __LINE__, GetLastError())
+#include "GameException.h"
+#include "Graphics.h"
+#include "Keyboard.h"
+
+#define WND_EXCEPTION(errorCode) Window::Exception(__FILE__, __LINE__, errorCode)
+#define WND_THROW_LAST_EXCEPTION() Window::Exception(__FILE__, __LINE__, GetLastError())
 
 class Window {
 public:
@@ -22,18 +24,18 @@ private:
     class WindowClass {
     public:
         static const wchar_t* GetWndClassName();
-        static HINSTANCE GetInstance();
+        static HINSTANCE GetHInstance();
     private:
         WindowClass();
         ~WindowClass();
         WindowClass(const WindowClass&) = delete;
         WindowClass& operator=(const WindowClass&) = delete;
-        static constexpr const wchar_t* wndClassName = L"window";
-        static WindowClass wndClass;
-        HINSTANCE hInstance;
+        static constexpr const wchar_t* mWndClassName = L"window";
+        static WindowClass mWndClass;
+        HINSTANCE mHInstance;
     };
 public:
-    Window(int width, int height, const wchar_t* wndName);
+    Window(int clientWidth, int clientHeight, const wchar_t* wndName);
     ~Window();
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
@@ -43,10 +45,10 @@ public:
 private:
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 private:
-    int width;
-    int height;
-    HWND hWnd;
-    std::unique_ptr<Graphics> graphics;
+    int mClientWidth;
+    int mClientHeight;
+    HWND mHWnd;
+    std::unique_ptr<Graphics> mGraphics;
 public:
-    Keyboard keyboard;
+    Keyboard mKeyboard;
 };

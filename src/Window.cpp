@@ -9,47 +9,52 @@ const char* Window::Exception::what() const noexcept {
     oss << "[Error Code]" << GetErrorCode() << std::endl
         << "[Description]" << GetErrorString() << std::endl
         << GetExceptionLocation();
-    whatBuffer = oss.str();
-    return whatBuffer.c_str();
+    mWhatBuffer = oss.str();
+    return mWhatBuffer.c_str();
 }
 
 const char* Window::Exception::GetType() const {
     return "Game Window Exception";
 }
 
-Window::WindowClass Window::WindowClass::wndClass;
+Window::WindowClass Window::WindowClass::mWndClass;
 
-Window::WindowClass::WindowClass() :hInstance(GetModuleHandle(nullptr)) {
+Window::WindowClass::WindowClass() :mHInstance(GetModuleHandle(nullptr)) {
     WNDCLASSEX wcex{};
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_OWNDC;
     wcex.lpfnWndProc = WndProc;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
-    wcex.hInstance = GetInstance();
+    wcex.hInstance = GetHInstance();
     wcex.hIcon = nullptr;
     wcex.hIconSm = nullptr;
     wcex.hCursor = nullptr;
     wcex.hbrBackground = nullptr;
     wcex.lpszMenuName = nullptr;
     wcex.lpszClassName = GetWndClassName();
-    RegisterClassEx(&wcex);
+    if(!RegisterClassEx(&wcex))
+        throw WND_THROW_LAST_EXCEPTION();
 }
 
 Window::WindowClass::~WindowClass() {
-    UnregisterClass(wndClassName, GetInstance());
+    UnregisterClass(mWndClassName, GetHInstance());
 }
 
 const wchar_t* Window::WindowClass::GetWndClassName() {
-    return wndClassName;
+    return mWndClassName;
 }
 
-HINSTANCE Window::WindowClass::GetInstance() {
-    return wndClass.hInstance;
+HINSTANCE Window::WindowClass::GetHInstance() {
+    return mWndClass.mHInstance;
 }
 
-Window::Window(int width, int height, const wchar_t* wndName) :width(width), height(height) {
-    hWnd = CreateWindow(
+Window::Window(int clientWidth, int clientHeight, const wchar_t* wndName) :mClientWidth(clientWidth), mClientHeight(clientHeight) {
+    RECT rect{ 0, 0, clientWidth, clientHeight };
+    AdjustWindowRect(&rect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, false);
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
+    mHWnd = CreateWindow(
         WindowClass::GetWndClassName(),
         wndName,
         WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
@@ -59,18 +64,19 @@ Window::Window(int width, int height, const wchar_t* wndName) :width(width), hei
         height,
         nullptr,
         nullptr,
-        WindowClass::GetInstance(),
+        WindowClass::GetHInstance(),
         nullptr
     );
-    ShowWindow(hWnd, SW_SHOWDEFAULT);
-    if (hWnd == nullptr) {
-        throw HWND_LAST_EXCEPTION();
+    if (mHWnd == nullptr) {
+        throw WND_THROW_LAST_EXCEPTION();
     }
-    graphics = std::make_unique<Graphics>(hWnd);
+    ShowWindow(mHWnd, SW_SHOWDEFAULT);
+    UpdateWindow(mHWnd);
+    mGraphics = std::make_unique<Graphics>(mHWnd, clientWidth, clientHeight);
 }
 
 Window::~Window() {
-    DestroyWindow(hWnd);
+    DestroyWindow(mHWnd);
 }
 
 std::optional<int> Window::ProgressMessage() {
@@ -83,6 +89,10 @@ std::optional<int> Window::ProgressMessage() {
         DispatchMessage(&msg);
     }
     return {};
+}
+
+Graphics& Window::GetGraphics() {
+    return *mGraphics;
 }
 
 LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {

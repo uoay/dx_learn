@@ -19,9 +19,9 @@ public:
     std::string GetErrorString() const;
     static std::string TranslateErrorCode(HRESULT errorCode);
 protected:
-    mutable std::string whatBuffer;
+    mutable std::string mWhatBuffer;
 private:
-    std::string file;
-    int line;
-    HRESULT errorCode;
+    std::string mFile;
+    int mLine;
+    HRESULT mErrorCode;
 };

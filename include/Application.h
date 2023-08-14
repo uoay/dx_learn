@@ -9,5 +9,5 @@ public:
 private:
     void DoFrame();
 private:
-    Window wnd;
+    Window mWnd;
 };

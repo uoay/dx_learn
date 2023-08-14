@@ -4,13 +4,13 @@
 
 #include <windows.h>
 
-GameException::GameException(const char* file, int line, HRESULT errorCode):file(file), line(line), errorCode(errorCode) {}
+GameException::GameException(const char* file, int line, HRESULT errorCode):mFile(file), mLine(line), mErrorCode(errorCode) {}
 
 const char* GameException::what() const noexcept {
     std::ostringstream oss;
     oss << GetType() << std::endl << GetExceptionLocation();
-    whatBuffer = oss.str();
-    return whatBuffer.c_str();
+    mWhatBuffer = oss.str();
+    return mWhatBuffer.c_str();
 }
 
 const char* GameException::GetType() const {
@@ -18,26 +18,26 @@ const char* GameException::GetType() const {
 }
 
 const std::string& GameException::GetFile() const {
-    return file;
+    return mFile;
 }
 
 int GameException::GetLine() const {
-    return line;
+    return mLine;
 }
 
 std::string GameException::GetExceptionLocation() const {
     std::ostringstream oss;
-    oss << "[file]" << file << std::endl
-        << "[line]" << line;
+    oss << "[file]" << mFile << std::endl
+        << "[line]" << mLine;
     return oss.str();
 }
 
 HRESULT GameException::GetErrorCode() const {
-    return errorCode;
+    return mErrorCode;
 }
 
 std::string GameException::GetErrorString() const {
-    return TranslateErrorCode(errorCode);
+    return TranslateErrorCode(mErrorCode);
 }
 
 std::string GameException::TranslateErrorCode(HRESULT errorCode) {

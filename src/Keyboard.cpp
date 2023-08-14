@@ -1,55 +1,55 @@
 #include "Keyboard.h"
 
-Keyboard::Event::Event(Type type, unsigned char code) :type(type), code(code) {}
+Keyboard::Event::Event(Type type, unsigned char code) :mType(type), mCode(code) {}
 
 bool Keyboard::Event::IsPress() const {
-	return type == Type::Press;
+	return mType == Type::Press;
 }
 
 bool Keyboard::Event::IsRelease() const {
-	return type == Type::Release;
+	return mType == Type::Release;
 }
 
 unsigned char Keyboard::Event::GetCode() const {
-	return code;
+	return mCode;
 }
 
 bool Keyboard::IsKeyPressed(unsigned char code) const {
-	return keyStates[code];
+	return mKeyStates[code];
 }
 
 std::optional<Keyboard::Event> Keyboard::ReadKey() {
-	if (keyBuffer.size() > 0u) {
-		Keyboard::Event e = keyBuffer.front();
-		keyBuffer.pop();
+	if (mKeyBuffer.size() > 0) {
+		Keyboard::Event e = mKeyBuffer.front();
+		mKeyBuffer.pop();
 		return e;
 	}
 	return {};
 }
 
 bool Keyboard::IsKeyEmpty() const {
-	return keyBuffer.empty();
+	return mKeyBuffer.empty();
 }
 
 void Keyboard::FlushKey() {
-	keyBuffer = std::queue<Event>();
+	mKeyBuffer = std::queue<Event>();
 }
 
 std::optional<char> Keyboard::ReadChar() {
-	if (charBuffer.size() > 0u) {
-		unsigned char code = charBuffer.front();
-		charBuffer.pop();
+	if (mCharBuffer.size() > 0) {
+		unsigned char code = mCharBuffer.front();
+		mCharBuffer.pop();
 		return code;
 	}
 	return {};
 }
 
 bool Keyboard::IsCharEmpty() const {
-	return charBuffer.empty();
+	return mCharBuffer.empty();
 }
 
 void Keyboard::FlushChar() {
-	charBuffer = std::queue<char>();
+	mCharBuffer = std::queue<char>();
 }
 
 void Keyboard::Flush() {
@@ -58,40 +58,40 @@ void Keyboard::Flush() {
 }
 
 void Keyboard::EnableAutoRepeat() {
-	autoRepeatEnabled = true;
+	mAutoRepeatEnabled = true;
 }
 
 void Keyboard::DisableAutoRepeat() {
-	autoRepeatEnabled = false;
+	mAutoRepeatEnabled = false;
 }
 
 bool Keyboard::IsAutoRepeatEnabled() const {
-	return autoRepeatEnabled;
+	return mAutoRepeatEnabled;
 }
 
 void Keyboard::OnKeyPressed(unsigned char code) {
-	keyStates[code] = true;
-	keyBuffer.push(Keyboard::Event(Keyboard::Event::Type::Press, code));
-	TrimBuffer(keyBuffer);
+	mKeyStates[code] = true;
+	mKeyBuffer.push(Keyboard::Event(Keyboard::Event::Type::Press, code));
+	TrimBuffer(mKeyBuffer);
 }
 
 void Keyboard::OnKeyReleased(unsigned char code) {
-	keyStates[code] = false;
-	keyBuffer.push(Keyboard::Event(Keyboard::Event::Type::Release, code));
-	TrimBuffer(keyBuffer);
+	mKeyStates[code] = false;
+	mKeyBuffer.push(Keyboard::Event(Keyboard::Event::Type::Release, code));
+	TrimBuffer(mKeyBuffer);
 }
 
 void Keyboard::OnChar(char character) {
-	charBuffer.push(character);
-	TrimBuffer(charBuffer);
+	mCharBuffer.push(character);
+	TrimBuffer(mCharBuffer);
 }
 
 void Keyboard::ClearKeyState() {
-	keyStates.reset();
+	mKeyStates.reset();
 }
 
 template<typename T> void Keyboard::TrimBuffer(std::queue<T>& buffer) {
-	while (buffer.size() > bufferSize) {
+	while (buffer.size() > mBufferSize) {
 		buffer.pop();
 	}
 }

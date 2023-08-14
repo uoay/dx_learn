@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "Window.h"
 
-Application::Application() :wnd(1024, 768, L"Ãû×Ö") {}
+Application::Application() :mWnd(1024, 768, L"Ãû×Ö") {}
 
 int Application::Run() {
     while (true) {
@@ -14,5 +14,5 @@ int Application::Run() {
 }
 
 void Application::DoFrame() {
-
+    mWnd.GetGraphics().Draw();
 }
