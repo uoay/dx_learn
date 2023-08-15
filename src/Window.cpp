@@ -49,7 +49,8 @@ HINSTANCE Window::WindowClass::GetHInstance() {
     return mWndClass.mHInstance;
 }
 
-Window::Window(int clientWidth, int clientHeight, const wchar_t* wndName) :mClientWidth(clientWidth), mClientHeight(clientHeight) {
+Window::Window(int clientWidth, int clientHeight, const wchar_t* wndName) :
+    mWndName(wndName), mClientWidth(clientWidth), mClientHeight(clientHeight) {
     RECT rect{ 0, 0, clientWidth, clientHeight };
     AdjustWindowRect(&rect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, false);
     int width = rect.right - rect.left;
@@ -93,6 +94,22 @@ std::optional<int> Window::ProgressMessage() {
 
 Graphics& Window::GetGraphics() {
     return *mGraphics;
+}
+
+void Window::CalculateFrameState() {
+    static int frameCount = 0;
+    static float elapsedTime = 0.0f;
+    ++frameCount;
+    if (mTimer.GetTotalTime() - elapsedTime >= 1.0f) {
+        float fps = static_cast<float>(frameCount);
+        float mspf = 1000.0f / fps;
+        std::wstring fpsStr = std::to_wstring(fps);
+        std::wstring mspfStr = std::to_wstring(mspf);
+        std::wstring wndName = mWndName + L"  fps:" + fpsStr + L"  mspf:" + mspfStr;
+        SetWindowText(mHWnd, wndName.c_str());
+        frameCount = 0;
+        elapsedTime += 1.0f;
+    }
 }
 
 LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {

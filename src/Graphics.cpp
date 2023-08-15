@@ -6,7 +6,7 @@
 
 #include "Direct3DUtil.h"
 
-Graphics::Graphics(HWND hWnd, int clientWidth, int clientHeight):mClientHeight(clientHeight), mClientWidth(clientWidth) {
+Graphics::Graphics(HWND hWnd, int clientWidth, int clientHeight) :mClientHeight(clientHeight), mClientWidth(clientWidth) {
 	InitDirect3D(hWnd);
 }
 
