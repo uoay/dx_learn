@@ -2,21 +2,12 @@
 
 #include <sstream>
 
+#include <d3dcompiler.h>
 #include <DirectXColors.h>
 
 #include "Direct3DUtil.h"
 
-Graphics::Graphics(HWND hWnd, int clientWidth, int clientHeight) :mClientHeight(clientHeight), mClientWidth(clientWidth) {
-	InitDirect3D(hWnd);
-}
-
-void Graphics::InitDirect3D(HWND hWnd) {
-#ifndef NDEBUG
-	Microsoft::WRL::ComPtr<ID3D12Debug6> debugController;
-	D3D12GetDebugInterface(IID_PPV_ARGS(&debugController));
-	debugController->EnableDebugLayer();
-#endif
-	
+Graphics::Graphics(HWND hWnd, int clientWidth, int clientHeight) : mClientHeight(clientHeight), mClientWidth(clientWidth) {
 	THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&mDevice)));
 
 	THROW_IF_FAILED(mDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
@@ -31,9 +22,8 @@ void Graphics::InitDirect3D(HWND hWnd) {
 
 	CreateRtvAndDsvDescriptorHeap();
 
-	CreateRenderTargetView();
+	OnResize();
 
-	CreateDepthStencilView();
 }
 
 void Graphics::CreateCommandObjects() {
@@ -150,7 +140,27 @@ void Graphics::CreateDepthStencilView() {
 		nullptr,
 		mDsvHeap->GetCPUDescriptorHandleForHeapStart()
 	);
+	mCommandList->ResourceBarrier(
+		1,
+		&CD3DX12_RESOURCE_BARRIER::Transition(
+			mDepthStencilBuffer.Get(),
+			D3D12_RESOURCE_STATE_COMMON,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE
+		)
+	);
 }
+
+void Graphics::CreateViewPortAndScissorRect() {
+	mScreenViewport.TopLeftX = 0;
+	mScreenViewport.TopLeftY = 0;
+	mScreenViewport.Width = static_cast<float>(mClientWidth);
+	mScreenViewport.Height = static_cast<float>(mClientHeight);
+	mScreenViewport.MinDepth = 0.0f;
+	mScreenViewport.MaxDepth = 1.0f;
+
+	mScissorRect = { 0, 0, mClientWidth, mClientHeight };
+}
+
 
 void Graphics::FlushCommandQueue() {
 	++mCurrentFence;
@@ -167,7 +177,35 @@ void Graphics::FlushCommandQueue() {
 	}
 }
 
-void Graphics::CreateViewPortAndScissorRect() {
+void Graphics::OnResize() {
+	assert(mDevice);
+	assert(mSwapChain);
+	assert(mCommandAllocator);
+
+	FlushCommandQueue();
+	THROW_IF_FAILED(mCommandList->Reset(mCommandAllocator.Get(), nullptr));
+
+	for (int i = 0; i < mBackBufferCount; ++i)
+		mBackBuffer[i].Reset();
+	mDepthStencilBuffer.Reset();
+
+	THROW_IF_FAILED(mSwapChain->ResizeBuffers(
+		mBackBufferCount,
+		mClientWidth, mClientHeight,
+		mBackBufferFormat,
+		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+	));
+	mCurrentBackBuffer = 0;
+
+	CreateRenderTargetView();
+	CreateDepthStencilView();
+
+	THROW_IF_FAILED(mCommandList->Close());
+	ID3D12CommandList* cmdsLists[]{ mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	FlushCommandQueue();
+
 	mScreenViewport.TopLeftX = 0;
 	mScreenViewport.TopLeftY = 0;
 	mScreenViewport.Width = static_cast<float>(mClientWidth);

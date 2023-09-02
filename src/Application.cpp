@@ -18,4 +18,5 @@ void Application::DoFrame() {
     mWnd.mTimer.Tick();
     mWnd.CalculateFrameState();
     mWnd.GetGraphics().Draw();
+    mWnd.GetGraphics().Update();
 }

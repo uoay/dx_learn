@@ -6,6 +6,7 @@
 #include "Graphics.h"
 #include "Keyboard.h"
 #include "Timer.h"
+#include "Geometry.h"
 
 #define WND_EXCEPTION(errorCode) Window::Exception(__FILE__, __LINE__, errorCode)
 #define WND_THROW_LAST_EXCEPTION() Window::Exception(__FILE__, __LINE__, GetLastError())
@@ -38,7 +39,7 @@ public:
     Window& operator=(const Window&) = delete;
     ~Window();
     static std::optional<int> ProgressMessage();
-    Graphics& GetGraphics();
+    Geometry& GetGraphics();
     void CalculateFrameState();
 private:
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -47,7 +48,7 @@ private:
     int mClientWidth;
     int mClientHeight;
     HWND mHWnd;
-    std::unique_ptr<Graphics> mGraphics;
+    std::unique_ptr<Geometry> mGraphics;
 public:
     Keyboard mKeyboard;
     Timer mTimer;

@@ -73,7 +73,7 @@ Window::Window(int clientWidth, int clientHeight, const wchar_t* wndName) :
     }
     ShowWindow(mHWnd, SW_SHOWDEFAULT);
     UpdateWindow(mHWnd);
-    mGraphics = std::make_unique<Graphics>(mHWnd, clientWidth, clientHeight);
+    mGraphics = std::make_unique<Geometry>(mHWnd, clientWidth, clientHeight);
 }
 
 Window::~Window() {
@@ -92,7 +92,7 @@ std::optional<int> Window::ProgressMessage() {
     return {};
 }
 
-Graphics& Window::GetGraphics() {
+Geometry& Window::GetGraphics() {
     return *mGraphics;
 }
 
