@@ -9,8 +9,6 @@ Geometry::Geometry(HWND hWnd, int clientWidth, int clientHeight) : Graphics(hWnd
 	CreateConstantBuffer();
 	CreateRootSignature();
 	CreateShadersAndInputLayout();
-	CreateVertexBufferAndBufferView();
-	CreateIndexBufferAndBufferView();
 	CreateCube();
 	CreatePipeLineStateObject();
 
@@ -21,12 +19,8 @@ Geometry::Geometry(HWND hWnd, int clientWidth, int clientHeight) : Graphics(hWnd
 	FlushCommandQueue();
 }
 
-void Geometry::CreateVertexBufferAndBufferView() {
-
-}
-
-void Geometry::CreateIndexBufferAndBufferView() {
-
+void Geometry::OnResize() {
+	Graphics::OnResize();
 }
 
 void Geometry::CreateConstantBufferViewDescriptorHeap() {

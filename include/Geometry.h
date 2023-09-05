@@ -8,14 +8,14 @@ public:
 	Geometry(HWND hWnd, int clientWidth, int clientHeight);
 	virtual void Draw() override;
 	virtual void Update();
+
+	virtual void OnResize() override;
 private:
 	void CreateConstantBufferViewDescriptorHeap();
 	void CreateConstantBuffer();
 	void CreateRootSignature();
 	void CreateShadersAndInputLayout();
 	void CreateCube();
-	void CreateVertexBufferAndBufferView();
-	void CreateIndexBufferAndBufferView();
 	void CreatePipeLineStateObject();
 	
 protected:

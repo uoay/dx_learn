@@ -23,7 +23,7 @@ Window::WindowClass::WindowClass() :mHInstance(GetModuleHandle(nullptr)) {
     WNDCLASSEX wcex{};
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_OWNDC;
-    wcex.lpfnWndProc = WndProc;
+    wcex.lpfnWndProc = HandleMessageSetup;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hInstance = GetHInstance();
@@ -112,9 +112,32 @@ void Window::CalculateFrameState() {
     }
 }
 
-LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+
+Window* Window::GetInstance() {
+    return mWindow;
+}
+
+LRESULT Window::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
-        case WM_CLOSE:PostQuitMessage(0);
+        case WM_CLOSE:
+            PostQuitMessage(0);
+            return 0;
+    }
+    return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+LRESULT CALLBACK Window::HandleMessageThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    Window* const wnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+    return wnd->HandleMessage(hWnd, msg, wParam, lParam);
+}
+
+LRESULT CALLBACK Window::HandleMessageSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_NCCREATE) {
+        const CREATESTRUCT* const createStruct = reinterpret_cast<CREATESTRUCT*>(lParam);
+        Window* const wnd = static_cast<Window*>(createStruct->lpCreateParams);
+        SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(wnd));
+        SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMessageThunk));
+        return wnd->HandleMessage(hWnd, msg, wParam, lParam);
     }
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
