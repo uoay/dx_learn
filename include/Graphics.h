@@ -7,7 +7,7 @@
 
 class Graphics {
 public:
-    Graphics(HWND hwnd, int clientWidth, int clientHeight);
+    Graphics(HWND hwnd, int clientHeight, int clientWidth);
     Graphics(const Graphics&) = delete;
     Graphics& operator=(const Graphics&) = delete;
     virtual void Draw();
@@ -17,16 +17,16 @@ protected:
     
     void CreateCommandObjects();
     
-    void CreateSwapChain(HWND hWnd);
+    void CreateSwapChain(HWND hWnd, int clientHeight, int clientWidth);
     void GetDescriptorSize();
     void CreateRtvAndDsvDescriptorHeap();
     void CreateRenderTargetView();
-    void CreateDepthStencilView();
-    void CreateViewPortAndScissorRect();
+    void CreateDepthStencilView(int clientHeight, int clientWidth);
+    void CreateViewPortAndScissorRect(int clientHeight, int clientWidth);
 
     void FlushCommandQueue();
 public:
-    virtual void OnResize();
+    virtual void OnResize(int clientHeight, int clientWidth);
 protected:
     static const DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     static const DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -49,6 +49,6 @@ protected:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
     D3D12_VIEWPORT mScreenViewport;
     D3D12_RECT mScissorRect;
-    int mClientWidth;
-    int mClientHeight;
+    //int mClientWidth;
+    //int mClientHeight;
 };

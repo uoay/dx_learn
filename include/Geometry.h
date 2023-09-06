@@ -9,7 +9,7 @@ public:
 	virtual void Draw() override;
 	virtual void Update();
 
-	virtual void OnResize() override;
+	virtual void OnResize(int clientWidth, int clientHeight) override;
 private:
 	void CreateConstantBufferViewDescriptorHeap();
 	void CreateConstantBuffer();

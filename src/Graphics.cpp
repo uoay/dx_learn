@@ -7,7 +7,7 @@
 
 #include "Direct3DUtil.h"
 
-Graphics::Graphics(HWND hWnd, int clientWidth, int clientHeight) : mClientHeight(clientHeight), mClientWidth(clientWidth) {
+Graphics::Graphics(HWND hWnd, int clientHeight, int clientWidth) {
 	THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&mDevice)));
 
 	THROW_IF_FAILED(mDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
@@ -16,13 +16,13 @@ Graphics::Graphics(HWND hWnd, int clientWidth, int clientHeight) : mClientHeight
 
 	THROW_IF_FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&mFactory)));
 
-	CreateSwapChain(hWnd);
+	CreateSwapChain(hWnd, clientHeight, clientWidth);
 
 	GetDescriptorSize();
 
 	CreateRtvAndDsvDescriptorHeap();
 
-	OnResize();
+	OnResize(clientHeight, clientWidth);
 
 }
 
@@ -47,10 +47,10 @@ void Graphics::CreateCommandObjects() {
 	THROW_IF_FAILED(mCommandList->Close());
 }
 
-void Graphics::CreateSwapChain(HWND hWnd) {
+void Graphics::CreateSwapChain(HWND hWnd, int clientHeight, int clientWidth) {
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-	swapChainDesc.Width = mClientWidth;
-	swapChainDesc.Height = mClientHeight;
+	swapChainDesc.Height = clientHeight;
+	swapChainDesc.Width = clientWidth;
 	swapChainDesc.Format = mBackBufferFormat;
 	swapChainDesc.Stereo = FALSE;
 	swapChainDesc.SampleDesc.Count = 1;
@@ -107,13 +107,13 @@ void Graphics::CreateRenderTargetView() {
 	}
 }
 
-void Graphics::CreateDepthStencilView() {
+void Graphics::CreateDepthStencilView(int clientHeight, int clientWidth) {
 	D3D12_RESOURCE_DESC dsvResourceDesc{};
 	dsvResourceDesc.Alignment = 0;
 	dsvResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	dsvResourceDesc.DepthOrArraySize = 1;
-	dsvResourceDesc.Width = mClientWidth;
-	dsvResourceDesc.Height = mClientHeight;
+	dsvResourceDesc.Height = clientHeight;
+	dsvResourceDesc.Width = clientWidth;
 	dsvResourceDesc.MipLevels = 1;
 	dsvResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	dsvResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
@@ -150,15 +150,15 @@ void Graphics::CreateDepthStencilView() {
 	);
 }
 
-void Graphics::CreateViewPortAndScissorRect() {
+void Graphics::CreateViewPortAndScissorRect(int clientHeight, int clientWidth) {
 	mScreenViewport.TopLeftX = 0;
 	mScreenViewport.TopLeftY = 0;
-	mScreenViewport.Width = static_cast<float>(mClientWidth);
-	mScreenViewport.Height = static_cast<float>(mClientHeight);
+	mScreenViewport.Height = static_cast<float>(clientHeight);
+	mScreenViewport.Width = static_cast<float>(clientWidth);
 	mScreenViewport.MinDepth = 0.0f;
 	mScreenViewport.MaxDepth = 1.0f;
 
-	mScissorRect = { 0, 0, mClientWidth, mClientHeight };
+	mScissorRect = { 0, 0, clientWidth, clientHeight };
 }
 
 
@@ -177,7 +177,7 @@ void Graphics::FlushCommandQueue() {
 	}
 }
 
-void Graphics::OnResize() {
+void Graphics::OnResize(int clientHeight, int clientWidth) {
 	assert(mDevice);
 	assert(mSwapChain);
 	assert(mCommandAllocator);
@@ -191,14 +191,14 @@ void Graphics::OnResize() {
 
 	THROW_IF_FAILED(mSwapChain->ResizeBuffers(
 		mBackBufferCount,
-		mClientWidth, mClientHeight,
+		clientWidth, clientHeight,
 		mBackBufferFormat,
 		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
 	));
 	mCurrentBackBuffer = 0;
 
 	CreateRenderTargetView();
-	CreateDepthStencilView();
+	CreateDepthStencilView(clientHeight, clientWidth);
 
 	THROW_IF_FAILED(mCommandList->Close());
 	ID3D12CommandList* cmdsLists[]{ mCommandList.Get() };
@@ -208,12 +208,12 @@ void Graphics::OnResize() {
 
 	mScreenViewport.TopLeftX = 0;
 	mScreenViewport.TopLeftY = 0;
-	mScreenViewport.Width = static_cast<float>(mClientWidth);
-	mScreenViewport.Height = static_cast<float>(mClientHeight);
+	mScreenViewport.Width = static_cast<float>(clientWidth);
+	mScreenViewport.Height = static_cast<float>(clientHeight);
 	mScreenViewport.MinDepth = 0.0f;
 	mScreenViewport.MaxDepth = 1.0f;
 
-	mScissorRect = { 0, 0, mClientWidth, mClientHeight };
+	mScissorRect = { 0, 0, clientWidth, clientHeight };
 }
 
 void Graphics::Draw() {

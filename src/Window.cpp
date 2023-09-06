@@ -52,13 +52,13 @@ HINSTANCE Window::WindowClass::GetHInstance() {
 Window::Window(int clientWidth, int clientHeight, const wchar_t* wndName) :
     mWndName(wndName), mClientWidth(clientWidth), mClientHeight(clientHeight) {
     RECT rect{ 0, 0, clientWidth, clientHeight };
-    AdjustWindowRect(&rect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, false);
+    AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
     mHWnd = CreateWindow(
         WindowClass::GetWndClassName(),
         wndName,
-        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
+        WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
         width,
@@ -66,14 +66,14 @@ Window::Window(int clientWidth, int clientHeight, const wchar_t* wndName) :
         nullptr,
         nullptr,
         WindowClass::GetHInstance(),
-        nullptr
+        this
     );
     if (mHWnd == nullptr) {
         throw WND_THROW_LAST_EXCEPTION();
     }
     ShowWindow(mHWnd, SW_SHOWDEFAULT);
     UpdateWindow(mHWnd);
-    mGraphics = std::make_unique<Geometry>(mHWnd, clientWidth, clientHeight);
+    mGraphics = std::make_unique<Geometry>(mHWnd, clientHeight, clientWidth);
 }
 
 Window::~Window() {
@@ -113,14 +113,21 @@ void Window::CalculateFrameState() {
 }
 
 
-Window* Window::GetInstance() {
-    return mWindow;
+void Window::OnResize(LPARAM lParam) {
+    mClientHeight = HIWORD(lParam);
+    mClientWidth = LOWORD(lParam); 
+    if (mGraphics != nullptr) {
+       mGraphics->OnResize(mClientHeight, mClientWidth);
+    } 
 }
 
 LRESULT Window::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_CLOSE:
             PostQuitMessage(0);
+            return 0;
+        case WM_SIZE:
+            OnResize(lParam);
             return 0;
     }
     return DefWindowProc(hWnd, msg, wParam, lParam);

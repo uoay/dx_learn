@@ -19,8 +19,8 @@ Geometry::Geometry(HWND hWnd, int clientWidth, int clientHeight) : Graphics(hWnd
 	FlushCommandQueue();
 }
 
-void Geometry::OnResize() {
-	Graphics::OnResize();
+void Geometry::OnResize(int clientWidth, int clientHeight) {
+	Graphics::OnResize(clientWidth, clientHeight);
 }
 
 void Geometry::CreateConstantBufferViewDescriptorHeap() {
@@ -37,7 +37,7 @@ void Geometry::CreateConstantBuffer() {
 
 	D3D12_GPU_VIRTUAL_ADDRESS address = mObjectContantsBuffer->GetResource()->GetGPUVirtualAddress();
 
-	UINT objCBByteSize = Direct3DUtil::CaculateConstantBufferByteSize(sizeof(Direct3DUtil::ObjectConstants));
+	UINT objCBByteSize = static_cast<UINT>(Direct3DUtil::CaculateConstantBufferByteSize(sizeof(Direct3DUtil::ObjectConstants)));
 
 	//int index = 0;
 	//address += index * objCBByteSize;
@@ -260,6 +260,7 @@ void Geometry::Update() {
 	DirectX::XMVECTOR target = DirectX::XMVectorZero();
 	DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	DirectX::XMMATRIX v = DirectX::XMMatrixLookAtLH(pos, target, up);
+
 	DirectX::XMMATRIX p = DirectX::XMMatrixPerspectiveFovLH(0.25f * 3.1416f, 1280.0f / 720.0f, 1.0f, 1000.0f);
 	DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&mWorld);
 	DirectX::XMMATRIX WVP_Matrix = v * p;

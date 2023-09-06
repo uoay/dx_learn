@@ -42,6 +42,8 @@ public:
     Geometry& GetGraphics();
     void CalculateFrameState();
 private:
+    void OnResize(LPARAM lParam);
+
     LRESULT HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     static LRESULT CALLBACK HandleMessageThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     static LRESULT CALLBACK HandleMessageSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
