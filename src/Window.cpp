@@ -117,7 +117,7 @@ void Window::OnResize(LPARAM lParam) {
     mClientHeight = HIWORD(lParam);
     mClientWidth = LOWORD(lParam); 
     if (mGraphics != nullptr) {
-       mGraphics->OnResize(mClientHeight, mClientWidth);
+       mGraphics->OnResize(mClientWidth, mClientHeight);
     } 
 }
 

@@ -2,7 +2,7 @@
 
 #include <d3dcompiler.h>
 
-Geometry::Geometry(HWND hWnd, int clientWidth, int clientHeight) : Graphics(hWnd, clientWidth, clientHeight) {
+Geometry::Geometry(HWND hWnd, int clientHeight, int clientWidth) : Graphics(hWnd, clientHeight, clientWidth) {
 	THROW_IF_FAILED(mCommandList->Reset(mCommandAllocator.Get(), nullptr));
 
 	CreateConstantBufferViewDescriptorHeap();
@@ -19,8 +19,11 @@ Geometry::Geometry(HWND hWnd, int clientWidth, int clientHeight) : Graphics(hWnd
 	FlushCommandQueue();
 }
 
-void Geometry::OnResize(int clientWidth, int clientHeight) {
-	Graphics::OnResize(clientWidth, clientHeight);
+void Geometry::OnResize(int clientHeight, int clientWidth) {
+	Graphics::OnResize(clientHeight, clientWidth);
+
+	//DirectX::XMMATRIX P = DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, DirectX::AspectRatio(), 1.0f, 1000.0f);
+	//XMStoreFloat4x4(&mProj, P);
 }
 
 void Geometry::CreateConstantBufferViewDescriptorHeap() {
@@ -251,7 +254,7 @@ void Geometry::Draw() {
 	FlushCommandQueue();
 }
 
-void Geometry::Update() {
+void Geometry::Update(int clientWidth,int clientHeight) {
 	Direct3DUtil::ObjectConstants objConstants;
 	float x = 0.0f;
 	float y = 0.0f;
@@ -261,8 +264,8 @@ void Geometry::Update() {
 	DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	DirectX::XMMATRIX v = DirectX::XMMatrixLookAtLH(pos, target, up);
 
-	DirectX::XMMATRIX p = DirectX::XMMatrixPerspectiveFovLH(0.25f * 3.1416f, 1280.0f / 720.0f, 1.0f, 1000.0f);
-	DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&mWorld);
+	DirectX::XMMATRIX p = DirectX::XMMatrixPerspectiveFovLH(0.25f * 3.1416f, static_cast<float>(clientWidth) / clientHeight, 1.0f, 1000.0f);
+	//DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&mWorld);
 	DirectX::XMMATRIX WVP_Matrix = v * p;
 	DirectX::XMStoreFloat4x4(&objConstants.worldViewProjection, XMMatrixTranspose(WVP_Matrix));
 	mObjectContantsBuffer->CopyData(0, objConstants);

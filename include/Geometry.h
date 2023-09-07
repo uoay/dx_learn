@@ -5,11 +5,11 @@
 
 class Geometry : public Graphics {
 public:
-	Geometry(HWND hWnd, int clientWidth, int clientHeight);
+	Geometry(HWND hWnd, int clientHeight, int clientWidth);
 	virtual void Draw() override;
-	virtual void Update();
+	virtual void Update(int clientHeigh, int clientWidtht);
 
-	virtual void OnResize(int clientWidth, int clientHeight) override;
+	virtual void OnResize(int clientHeight, int clientWidth) override;
 private:
 	void CreateConstantBufferViewDescriptorHeap();
 	void CreateConstantBuffer();

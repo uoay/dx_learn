@@ -7,7 +7,7 @@
 
 class Graphics {
 public:
-    Graphics(HWND hwnd, int clientHeight, int clientWidth);
+    Graphics(HWND hwnd, int clientWidth, int clientHeight);
     Graphics(const Graphics&) = delete;
     Graphics& operator=(const Graphics&) = delete;
     virtual void Draw();
@@ -17,16 +17,16 @@ protected:
     
     void CreateCommandObjects();
     
-    void CreateSwapChain(HWND hWnd, int clientHeight, int clientWidth);
+    void CreateSwapChain(HWND hWnd, int clientWidth, int clientHeight);
     void GetDescriptorSize();
     void CreateRtvAndDsvDescriptorHeap();
     void CreateRenderTargetView();
-    void CreateDepthStencilView(int clientHeight, int clientWidth);
-    void CreateViewPortAndScissorRect(int clientHeight, int clientWidth);
+    void CreateDepthStencilView(int clientWidth, int clientHeight);
+    void CreateViewPortAndScissorRect(int clientWidth, int clientHeight);
 
     void FlushCommandQueue();
 public:
-    virtual void OnResize(int clientHeight, int clientWidth);
+    virtual void OnResize(int clientWidth, int clientHeight);
 protected:
     static const DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     static const DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;

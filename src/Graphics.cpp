@@ -7,7 +7,7 @@
 
 #include "Direct3DUtil.h"
 
-Graphics::Graphics(HWND hWnd, int clientHeight, int clientWidth) {
+Graphics::Graphics(HWND hWnd, int clientWidth, int clientHeight) {
 	THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&mDevice)));
 
 	THROW_IF_FAILED(mDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
@@ -47,7 +47,7 @@ void Graphics::CreateCommandObjects() {
 	THROW_IF_FAILED(mCommandList->Close());
 }
 
-void Graphics::CreateSwapChain(HWND hWnd, int clientHeight, int clientWidth) {
+void Graphics::CreateSwapChain(HWND hWnd, int clientWidth, int clientHeight) {
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 	swapChainDesc.Height = clientHeight;
 	swapChainDesc.Width = clientWidth;
@@ -107,7 +107,7 @@ void Graphics::CreateRenderTargetView() {
 	}
 }
 
-void Graphics::CreateDepthStencilView(int clientHeight, int clientWidth) {
+void Graphics::CreateDepthStencilView(int clientWidth, int clientHeight) {
 	D3D12_RESOURCE_DESC dsvResourceDesc{};
 	dsvResourceDesc.Alignment = 0;
 	dsvResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -150,11 +150,11 @@ void Graphics::CreateDepthStencilView(int clientHeight, int clientWidth) {
 	);
 }
 
-void Graphics::CreateViewPortAndScissorRect(int clientHeight, int clientWidth) {
+void Graphics::CreateViewPortAndScissorRect(int clientWidth, int clientHeight) {
 	mScreenViewport.TopLeftX = 0;
 	mScreenViewport.TopLeftY = 0;
-	mScreenViewport.Height = static_cast<float>(clientHeight);
 	mScreenViewport.Width = static_cast<float>(clientWidth);
+	mScreenViewport.Height = static_cast<float>(clientHeight);
 	mScreenViewport.MinDepth = 0.0f;
 	mScreenViewport.MaxDepth = 1.0f;
 
@@ -177,7 +177,7 @@ void Graphics::FlushCommandQueue() {
 	}
 }
 
-void Graphics::OnResize(int clientHeight, int clientWidth) {
+void Graphics::OnResize(int clientWidth, int clientHeight) {
 	assert(mDevice);
 	assert(mSwapChain);
 	assert(mCommandAllocator);
@@ -198,7 +198,7 @@ void Graphics::OnResize(int clientHeight, int clientWidth) {
 	mCurrentBackBuffer = 0;
 
 	CreateRenderTargetView();
-	CreateDepthStencilView(clientHeight, clientWidth);
+	CreateDepthStencilView(clientWidth, clientHeight);
 
 	THROW_IF_FAILED(mCommandList->Close());
 	ID3D12CommandList* cmdsLists[]{ mCommandList.Get() };
