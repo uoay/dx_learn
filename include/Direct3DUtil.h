@@ -49,7 +49,7 @@ public:
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList7>& commandList,
 		const void* initData,
 		size_t byteSize,
-		Microsoft::WRL::ComPtr<ID3D12Resource2>& uploadBuffer,//uploadBuffer²»ÄÜÁ¢¼´Ïú»Ù
+		Microsoft::WRL::ComPtr<ID3D12Resource2>& uploadBuffer,//uploadBufferä¸èƒ½ç«‹å³é”€æ¯
 		Microsoft::WRL::ComPtr<ID3D12Resource2>& defaultBuffer
 	);
 	static size_t CaculateConstantBufferByteSize(size_t byteSize);

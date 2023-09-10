@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "Window.h"
 
-Application::Application() :mWnd(1024, 768, L"Ãû×Ö") {}
+Application::Application() :mWnd(1024, 768, L"åå­—") {}
 
 int Application::Run() {
     mWnd.mTimer.Reset();

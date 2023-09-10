@@ -26,12 +26,12 @@ public:
     Keyboard() = default;
     Keyboard(const Keyboard&) = delete;
     Keyboard& operator=(const Keyboard&) = delete;
-    //按下键盘
+    //鎸変笅閿洏
     bool IsKeyPressed(unsigned char code) const;
     std::optional<Event> ReadKey();
     bool IsKeyEmpty() const;
     void FlushKey();
-    //输入文字
+    //杈撳叆鏂囧瓧
     std::optional<char> ReadChar();
     bool IsCharEmpty() const;
     void FlushChar();
