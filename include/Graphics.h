@@ -49,6 +49,4 @@ protected:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
     D3D12_VIEWPORT mScreenViewport;
     D3D12_RECT mScissorRect;
-    //int mClientWidth;
-    //int mClientHeight;
 };

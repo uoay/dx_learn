@@ -3,6 +3,7 @@
 #include "directx/d3d12.h"
 
 #include "Direct3DUtil.h"
+#include "GameException.h"
 
 template <typename T>
 class UploadBuffer {
@@ -14,7 +15,7 @@ public:
 		else {
 			mElementByteSize = sizeof(T);
 		}
-		THROW_IF_FAILED(device->CreateCommittedResource(
+		GFX_THROW_IF_FAILED(device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer(mElementByteSize * elementCount),
@@ -22,7 +23,7 @@ public:
 			nullptr,
 			IID_PPV_ARGS(&mUploadBuffer)
 		));
-		THROW_IF_FAILED(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedData)));
+		GFX_THROW_IF_FAILED(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedData)));
 	}
 	UploadBuffer(const UploadBuffer& uploadBuffer) = delete;
 	UploadBuffer& operator=(const UploadBuffer& uploadBuffer) = delete;

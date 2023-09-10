@@ -6,15 +6,16 @@
 #include <DirectXColors.h>
 
 #include "Direct3DUtil.h"
+#include "GameException.h"
 
 Graphics::Graphics(HWND hWnd, int clientWidth, int clientHeight) {
-	THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&mDevice)));
+	GFX_THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&mDevice)));
 
-	THROW_IF_FAILED(mDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
+	GFX_THROW_IF_FAILED(mDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
 
 	CreateCommandObjects();
 
-	THROW_IF_FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&mFactory)));
+	GFX_THROW_IF_FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&mFactory)));
 
 	CreateSwapChain(hWnd, clientHeight, clientWidth);
 
@@ -33,18 +34,18 @@ void Graphics::CreateCommandObjects() {
 	commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	commandQueueDesc.NodeMask = 0;
 
-	THROW_IF_FAILED(mDevice->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&mCommandQueue)));
+	GFX_THROW_IF_FAILED(mDevice->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&mCommandQueue)));
 
-	THROW_IF_FAILED(mDevice->CreateCommandAllocator(commandQueueDesc.Type, IID_PPV_ARGS(&mCommandAllocator)));
+	GFX_THROW_IF_FAILED(mDevice->CreateCommandAllocator(commandQueueDesc.Type, IID_PPV_ARGS(&mCommandAllocator)));
 
-	THROW_IF_FAILED(mDevice->CreateCommandList(
+	GFX_THROW_IF_FAILED(mDevice->CreateCommandList(
 		0,
 		commandQueueDesc.Type,
 		mCommandAllocator.Get(),
 		nullptr,
 		IID_PPV_ARGS(&mCommandList)
 	));
-	THROW_IF_FAILED(mCommandList->Close());
+	GFX_THROW_IF_FAILED(mCommandList->Close());
 }
 
 void Graphics::CreateSwapChain(HWND hWnd, int clientWidth, int clientHeight) {
@@ -63,7 +64,7 @@ void Graphics::CreateSwapChain(HWND hWnd, int clientWidth, int clientHeight) {
 	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	IDXGISwapChain1* tmpSwapChain = nullptr;
-	THROW_IF_FAILED(mFactory->CreateSwapChainForHwnd(
+	GFX_THROW_IF_FAILED(mFactory->CreateSwapChainForHwnd(
 		mCommandQueue.Get(),
 		hWnd,
 		&swapChainDesc,
@@ -71,7 +72,7 @@ void Graphics::CreateSwapChain(HWND hWnd, int clientWidth, int clientHeight) {
 		nullptr,
 		&tmpSwapChain
 	));
-	THROW_IF_FAILED(tmpSwapChain->QueryInterface(IID_PPV_ARGS(&mSwapChain)));
+	GFX_THROW_IF_FAILED(tmpSwapChain->QueryInterface(IID_PPV_ARGS(&mSwapChain)));
 	tmpSwapChain->Release();
 }
 
@@ -88,20 +89,20 @@ void Graphics::CreateRtvAndDsvDescriptorHeap() {
 	rtvHeapDesc.NumDescriptors = mBackBufferCount;
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	rtvHeapDesc.NodeMask = 0;
-	THROW_IF_FAILED(mDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&mRtvHeap)));
+	GFX_THROW_IF_FAILED(mDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&mRtvHeap)));
 
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	dsvHeapDesc.NumDescriptors = 1;
 	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	dsvHeapDesc.NodeMask = 0;
-	THROW_IF_FAILED(mDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&mDsvHeap)));
+	GFX_THROW_IF_FAILED(mDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&mDsvHeap)));
 }
 
 void Graphics::CreateRenderTargetView() {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->GetCPUDescriptorHandleForHeapStart());
 	for (int i = 0; i < mBackBufferCount; ++i) {
-		THROW_IF_FAILED(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mBackBuffer[i])));
+		GFX_THROW_IF_FAILED(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mBackBuffer[i])));
 		mDevice->CreateRenderTargetView(mBackBuffer[i].Get(), nullptr, rtvHeapHandle);	
 		rtvHeapHandle.Offset(1, mRtvDescriptorSize);
 	}
@@ -126,7 +127,7 @@ void Graphics::CreateDepthStencilView(int clientWidth, int clientHeight) {
 	optClear.DepthStencil.Depth = 1.0f;
 	optClear.DepthStencil.Stencil = 0;
 
-	THROW_IF_FAILED(mDevice->CreateCommittedResource(
+	GFX_THROW_IF_FAILED(mDevice->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&dsvResourceDesc,
@@ -164,12 +165,12 @@ void Graphics::CreateViewPortAndScissorRect(int clientWidth, int clientHeight) {
 
 void Graphics::FlushCommandQueue() {
 	++mCurrentFence;
-	THROW_IF_FAILED(mCommandQueue->Signal(mFence.Get(), mCurrentFence));
+	GFX_THROW_IF_FAILED(mCommandQueue->Signal(mFence.Get(), mCurrentFence));
 	if (mFence->GetCompletedValue() < mCurrentFence)
 	{
 		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
 		if (eventHandle == nullptr) {
-			THROW_LAST_EXCEPTION();
+			GFX_THROW_LAST_EXCEPTION();
 		}
 		mFence->SetEventOnCompletion(mCurrentFence, eventHandle);
 		WaitForSingleObject(eventHandle, INFINITE);
@@ -183,13 +184,13 @@ void Graphics::OnResize(int clientWidth, int clientHeight) {
 	assert(mCommandAllocator);
 
 	FlushCommandQueue();
-	THROW_IF_FAILED(mCommandList->Reset(mCommandAllocator.Get(), nullptr));
+	GFX_THROW_IF_FAILED(mCommandList->Reset(mCommandAllocator.Get(), nullptr));
 
 	for (int i = 0; i < mBackBufferCount; ++i)
 		mBackBuffer[i].Reset();
 	mDepthStencilBuffer.Reset();
 
-	THROW_IF_FAILED(mSwapChain->ResizeBuffers(
+	GFX_THROW_IF_FAILED(mSwapChain->ResizeBuffers(
 		mBackBufferCount,
 		clientWidth, clientHeight,
 		mBackBufferFormat,
@@ -200,7 +201,7 @@ void Graphics::OnResize(int clientWidth, int clientHeight) {
 	CreateRenderTargetView();
 	CreateDepthStencilView(clientWidth, clientHeight);
 
-	THROW_IF_FAILED(mCommandList->Close());
+	GFX_THROW_IF_FAILED(mCommandList->Close());
 	ID3D12CommandList* cmdsLists[]{ mCommandList.Get() };
 	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
@@ -217,8 +218,8 @@ void Graphics::OnResize(int clientWidth, int clientHeight) {
 }
 
 void Graphics::Draw() {
-	THROW_IF_FAILED(mCommandAllocator->Reset());
-	THROW_IF_FAILED(mCommandList->Reset(mCommandAllocator.Get(), nullptr));
+	GFX_THROW_IF_FAILED(mCommandAllocator->Reset());
+	GFX_THROW_IF_FAILED(mCommandList->Reset(mCommandAllocator.Get(), nullptr));
 	mCommandList->ResourceBarrier(
 		1,
 		&CD3DX12_RESOURCE_BARRIER::Transition(
@@ -271,10 +272,10 @@ void Graphics::Draw() {
 			
 		)
 	);
-	THROW_IF_FAILED(mCommandList->Close());
+	GFX_THROW_IF_FAILED(mCommandList->Close());
 	ID3D12CommandList* cmdsLists[]{ mCommandList.Get() };
 	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
-	THROW_IF_FAILED(mSwapChain->Present(0, 0));
+	GFX_THROW_IF_FAILED(mSwapChain->Present(0, 0));
 	mCurrentBackBuffer = (mCurrentBackBuffer + 1) % mBackBufferCount;
 	FlushCommandQueue();
 }

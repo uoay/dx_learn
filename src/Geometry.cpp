@@ -2,8 +2,10 @@
 
 #include <d3dcompiler.h>
 
+#include "GameException.h"
+
 Geometry::Geometry(HWND hWnd, int clientHeight, int clientWidth) : Graphics(hWnd, clientHeight, clientWidth) {
-	THROW_IF_FAILED(mCommandList->Reset(mCommandAllocator.Get(), nullptr));
+	GFX_THROW_IF_FAILED(mCommandList->Reset(mCommandAllocator.Get(), nullptr));
 
 	CreateConstantBufferViewDescriptorHeap();
 	CreateConstantBuffer();
@@ -12,7 +14,7 @@ Geometry::Geometry(HWND hWnd, int clientHeight, int clientWidth) : Graphics(hWnd
 	CreateCube();
 	CreatePipeLineStateObject();
 
-	THROW_IF_FAILED(mCommandList->Close());
+	GFX_THROW_IF_FAILED(mCommandList->Close());
 	ID3D12CommandList* cmdsLists[]{ mCommandList.Get() };
 	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
@@ -32,7 +34,7 @@ void Geometry::CreateConstantBufferViewDescriptorHeap() {
 	cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	cbvHeapDesc.NumDescriptors = 1;
 	cbvHeapDesc.NodeMask = 0;
-	THROW_IF_FAILED(mDevice->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&mCbvHeap)));
+	GFX_THROW_IF_FAILED(mDevice->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&mCbvHeap)));
 }
 
 void Geometry::CreateConstantBuffer() {
@@ -71,9 +73,9 @@ void Geometry::CreateRootSignature() {
 	if (errorBlob != nullptr) {
 		OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer()));
 	}
-	THROW_IF_FAILED(hr);
+	GFX_THROW_IF_FAILED(hr);
 
-	THROW_IF_FAILED(mDevice->CreateRootSignature(
+	GFX_THROW_IF_FAILED(mDevice->CreateRootSignature(
 		0,
 		serializedRootSig->GetBufferPointer(),
 		serializedRootSig->GetBufferSize(),
@@ -128,9 +130,9 @@ void Geometry::CreateCube() {
 	mCube = std::make_unique<Direct3DUtil::MeshGeometry>();
 	mCube->name = L"cube";
 
-	THROW_IF_FAILED(D3DCreateBlob(vbByteSize, &mCube->VertexBufferCPU));
+	GFX_THROW_IF_FAILED(D3DCreateBlob(vbByteSize, &mCube->VertexBufferCPU));
 	CopyMemory(mCube->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
-	THROW_IF_FAILED(D3DCreateBlob(ibByteSize, &mCube->IndexBufferCPU));
+	GFX_THROW_IF_FAILED(D3DCreateBlob(ibByteSize, &mCube->IndexBufferCPU));
 	CopyMemory(mCube->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
 	Direct3DUtil::CreateDefaultBuffer(
@@ -166,8 +168,7 @@ void Geometry::CreateCube() {
 }
 
 void Geometry::CreatePipeLineStateObject() {
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
 	psoDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
 	psoDesc.pRootSignature = mRootSignature.Get();
 	psoDesc.VS = { reinterpret_cast<BYTE*>(mVsBytecode->GetBufferPointer()), mVsBytecode->GetBufferSize() };
@@ -183,12 +184,12 @@ void Geometry::CreatePipeLineStateObject() {
 	psoDesc.SampleDesc.Count = 1;
 	psoDesc.SampleDesc.Quality = 0;
 
-	THROW_IF_FAILED(mDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPSO)));
+	GFX_THROW_IF_FAILED(mDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPSO)));
 }
 
 void Geometry::Draw() {
-	THROW_IF_FAILED(mCommandAllocator->Reset());
-	THROW_IF_FAILED(mCommandList->Reset(mCommandAllocator.Get(), mPSO.Get()));
+	GFX_THROW_IF_FAILED(mCommandAllocator->Reset());
+	GFX_THROW_IF_FAILED(mCommandList->Reset(mCommandAllocator.Get(), mPSO.Get()));
 
 	mCommandList->RSSetViewports(1, &mScreenViewport);
 	mCommandList->RSSetScissorRects(1, &mScissorRect);
@@ -243,12 +244,12 @@ void Geometry::Draw() {
 		)
 	);
 
-	THROW_IF_FAILED(mCommandList->Close());
+	GFX_THROW_IF_FAILED(mCommandList->Close());
 
 	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
 	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-	THROW_IF_FAILED(mSwapChain->Present(0, 0));
+	GFX_THROW_IF_FAILED(mSwapChain->Present(0, 0));
 	mCurrentBackBuffer = (mCurrentBackBuffer + 1) % mBackBufferCount;
 
 	FlushCommandQueue();
@@ -265,7 +266,6 @@ void Geometry::Update(int clientWidth,int clientHeight) {
 	DirectX::XMMATRIX v = DirectX::XMMatrixLookAtLH(pos, target, up);
 
 	DirectX::XMMATRIX p = DirectX::XMMatrixPerspectiveFovLH(0.25f * 3.1416f, static_cast<float>(clientWidth) / clientHeight, 1.0f, 1000.0f);
-	//DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&mWorld);
 	DirectX::XMMATRIX WVP_Matrix = v * p;
 	DirectX::XMStoreFloat4x4(&objConstants.worldViewProjection, XMMatrixTranspose(WVP_Matrix));
 	mObjectContantsBuffer->CopyData(0, objConstants);

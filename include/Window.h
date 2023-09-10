@@ -8,17 +8,7 @@
 #include "Timer.h"
 #include "Geometry.h"
 
-#define WND_EXCEPTION(errorCode) Window::Exception(__FILE__, __LINE__, errorCode)
-#define WND_THROW_LAST_EXCEPTION() Window::Exception(__FILE__, __LINE__, GetLastError())
-
 class Window {
-public:
-    class Exception : public GameException {
-    public:
-        Exception(const char* file, int line, HRESULT errorCode);
-        virtual const char* what() const noexcept;
-        virtual const char* GetType() const;
-    };
 private:
     class WindowClass {
     public:

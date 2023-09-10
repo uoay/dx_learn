@@ -2,20 +2,7 @@
 
 #include <sstream>
 
-Window::Exception::Exception(const char* file, int line, HRESULT errorCode) :GameException(file, line, errorCode) {}
-
-const char* Window::Exception::what() const noexcept {
-    std::ostringstream oss;
-    oss << "[Error Code]" << GetErrorCode() << std::endl
-        << "[Description]" << GetErrorString() << std::endl
-        << GetExceptionLocation();
-    mWhatBuffer = oss.str();
-    return mWhatBuffer.c_str();
-}
-
-const char* Window::Exception::GetType() const {
-    return "Game Window Exception";
-}
+#include "GameException.h"
 
 Window::WindowClass Window::WindowClass::mWndClass;
 

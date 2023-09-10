@@ -4,57 +4,56 @@
 
 #include <windows.h>
 
-GameException::GameException(const char* file, int line, HRESULT errorCode):mFile(file), mLine(line), mErrorCode(errorCode) {}
+GameException::GameException(const wchar_t* const type, const wchar_t* const file, const int line, const HRESULT errorCode):mType(type), mFile(file), mLine(line), mErrorCode(errorCode) {}
 
-const char* GameException::what() const noexcept {
-    std::ostringstream oss;
-    oss << GetType() << std::endl << GetExceptionLocation();
-    mWhatBuffer = oss.str();
+const wchar_t* GameException::What() const noexcept {
+    std::wostringstream woss;
+    woss << GetType() << std::endl << GetExceptionLocation();
+    mWhatBuffer = woss.str();
     return mWhatBuffer.c_str();
 }
 
-const char* GameException::GetType() const {
-    return "Game Exception";
+const wchar_t* GameException::GetType() const noexcept {
+    return mType.c_str();
 }
 
-const std::string& GameException::GetFile() const {
+const std::wstring& GameException::GetFile() const noexcept {
     return mFile;
 }
 
-int GameException::GetLine() const {
+int GameException::GetLine() const noexcept {
     return mLine;
 }
 
-std::string GameException::GetExceptionLocation() const {
-    std::ostringstream oss;
-    oss << "[file]" << mFile << std::endl
-        << "[line]" << mLine;
-    return oss.str();
+std::wstring GameException::GetExceptionLocation() const noexcept {
+    std::wostringstream woss;
+    woss << L"[file]" << mFile << std::endl << L"[line]" << mLine;
+    return woss.str();
 }
 
-HRESULT GameException::GetErrorCode() const {
+HRESULT GameException::GetErrorCode() const noexcept {
     return mErrorCode;
 }
 
-std::string GameException::GetErrorString() const {
+std::wstring GameException::GetErrorString() const noexcept {
     return TranslateErrorCode(mErrorCode);
 }
 
-std::string GameException::TranslateErrorCode(HRESULT errorCode) {
-    char* pMessageBuffer = nullptr;
-    DWORD MessageLength = FormatMessageA(
+std::wstring GameException::TranslateErrorCode(HRESULT errorCode) noexcept {
+    wchar_t* messageBuffer = nullptr;
+    DWORD MessageLength = FormatMessage(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
         nullptr,
         errorCode,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        reinterpret_cast<char*>(&pMessageBuffer),
+        reinterpret_cast<wchar_t*>(&messageBuffer),
         0,
         nullptr
     );
     if(MessageLength == 0) {
-        return "Unidentified error code";
+        return L"Unidentified error code";
     }
-    std::string errorString(pMessageBuffer);
-    LocalFree(pMessageBuffer);
+    std::wstring errorString(messageBuffer);
+    LocalFree(messageBuffer);
     return errorString;
 }

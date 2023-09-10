@@ -4,20 +4,7 @@
 
 #include <d3dcompiler.h>
 
-Direct3DUtil::Exception::Exception(const char* file, int line, HRESULT errorCode) :GameException(file, line, errorCode) {}
-
-const char* Direct3DUtil::Exception::what() const noexcept {
-	std::ostringstream oss;
-	oss << "[Error Code]" << GetErrorCode() << std::endl
-		<< "[Description]" << GetErrorString() << std::endl
-		<< GetExceptionLocation();
-	mWhatBuffer = oss.str();
-	return mWhatBuffer.c_str();
-}
-
-const char* Direct3DUtil::Exception::GetType() const {
-	return "Direct3D Exception";
-}
+#include "GameException.h"
 
 void Direct3DUtil::CreateDefaultBuffer(
 	Microsoft::WRL::ComPtr<ID3D12Device10>& device,
@@ -27,7 +14,7 @@ void Direct3DUtil::CreateDefaultBuffer(
 	Microsoft::WRL::ComPtr<ID3D12Resource2>& uploadBuffer,
 	Microsoft::WRL::ComPtr<ID3D12Resource2>& defaultBuffer
 ) {
-	THROW_IF_FAILED(device->CreateCommittedResource(
+	GFX_THROW_IF_FAILED(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
@@ -36,7 +23,7 @@ void Direct3DUtil::CreateDefaultBuffer(
 		IID_PPV_ARGS(&defaultBuffer)
 	));
 
-	THROW_IF_FAILED(device->CreateCommittedResource(
+	GFX_THROW_IF_FAILED(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
@@ -104,7 +91,7 @@ Microsoft::WRL::ComPtr<ID3DBlob> Direct3DUtil::CompileShader(
 	if (errorBlob != nullptr) {
 		OutputDebugStringA((char*)errorBlob->GetBufferPointer());
 	}
-	THROW_IF_FAILED(hr);
+	GFX_THROW_IF_FAILED(hr);
 
 	return byteCode;
 }
