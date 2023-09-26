@@ -36,13 +36,13 @@ HINSTANCE Window::WindowClass::GetHInstance() {
     return mWndClass.mHInstance;
 }
 
-Window::Window(int clientWidth, int clientHeight, const wchar_t* wndName) :
+Window::Window(const int clientWidth, const int clientHeight, const wchar_t* wndName) :
     mWndName(wndName), mClientWidth(clientWidth), mClientHeight(clientHeight) {
     RECT rect{ 0, 0, clientWidth, clientHeight };
     AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
-    mHWnd = CreateWindow(
+    mHWnd = CreateWindowW(
         WindowClass::GetWndClassName(),
         wndName,
         WS_OVERLAPPEDWINDOW,
@@ -60,7 +60,7 @@ Window::Window(int clientWidth, int clientHeight, const wchar_t* wndName) :
     }
     ShowWindow(mHWnd, SW_SHOWDEFAULT);
     UpdateWindow(mHWnd);
-    mGraphics = std::make_unique<Geometry>(mHWnd, clientHeight, clientWidth);
+    mGraphics = std::make_unique<Graphics>(mHWnd, clientWidth, clientHeight);
 }
 
 Window::~Window() {
@@ -79,7 +79,7 @@ std::optional<int> Window::ProgressMessage() {
     return {};
 }
 
-Geometry& Window::GetGraphics() {
+Graphics& Window::GetGraphics() {
     return *mGraphics;
 }
 

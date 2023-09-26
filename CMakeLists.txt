@@ -8,10 +8,16 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 add_definitions(-DUNICODE)
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
+add_compile_options(/utf-8)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/external/DirectX-Headers)
+#include_directories(include)
+
+add_subdirectory(external)
+
+add_subdirectory(shader)
 
 add_subdirectory(src)

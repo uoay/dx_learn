@@ -2,13 +2,11 @@
 
 #include <sstream>
 
-#include <windows.h>
-
 GameException::GameException(const wchar_t* const type, const wchar_t* const file, const int line, const HRESULT errorCode):mType(type), mFile(file), mLine(line), mErrorCode(errorCode) {}
 
 const wchar_t* GameException::What() const noexcept {
     std::wostringstream woss;
-    woss << GetType() << std::endl << GetExceptionLocation();
+    woss << GetType() << std::endl << GetExceptionLocation() << std::endl << GetErrorString();
     mWhatBuffer = woss.str();
     return mWhatBuffer.c_str();
 }

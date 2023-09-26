@@ -3,10 +3,9 @@
 #include <memory>
 
 #include "GameException.h"
-#include "Graphics.h"
 #include "Keyboard.h"
 #include "Timer.h"
-#include "Geometry.h"
+#include "graphics/Graphics.h"
 
 class Window {
 private:
@@ -24,12 +23,12 @@ private:
         HINSTANCE mHInstance;
     };
 public:
-    Window(int clientWidth, int clientHeight, const wchar_t* wndName);
+    Window(const int clientWidth, const int clientHeight, const wchar_t* wndName);
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
     ~Window();
     static std::optional<int> ProgressMessage();
-    Geometry& GetGraphics();
+    Graphics& GetGraphics();
     void CalculateFrameState();
 private:
     void OnResize(LPARAM lParam);
@@ -42,7 +41,7 @@ private:
     int mClientWidth;
     int mClientHeight;
     HWND mHWnd;
-    std::unique_ptr<Geometry> mGraphics;
+    std::unique_ptr<Graphics> mGraphics;
 public:
     Keyboard mKeyboard;
     Timer mTimer;

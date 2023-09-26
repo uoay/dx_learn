@@ -1,4 +1,9 @@
-aux_source_directory(${CMAKE_SOURCE_DIR}/src sourceFiles)
+add_subdirectory(graphics)
+
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} sourceFiles)
+
 add_executable(${PROJECT_NAME} WIN32 ${sourceFiles})
-target_link_libraries(${PROJECT_NAME} PUBLIC d3dcompiler.lib D3D12.lib dxgi.lib)
-target_link_libraries(${PROJECT_NAME} PUBLIC DirectX-Headers DirectX-Guids)
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC Graphics)

@@ -45,12 +45,12 @@ public:
 
 public:
 	static void CreateDefaultBuffer(
-		Microsoft::WRL::ComPtr<ID3D12Device10>& device,
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList7>& commandList,
+		ID3D12Device* device,
+		ID3D12GraphicsCommandList* commandList,
 		const void* initData,
 		size_t byteSize,
-		Microsoft::WRL::ComPtr<ID3D12Resource2>& uploadBuffer,//uploadBuffer不能立即销毁
-		Microsoft::WRL::ComPtr<ID3D12Resource2>& defaultBuffer
+		ID3D12Resource* uploadBuffer, //uploadBuffer不能立即销毁
+		ID3D12Resource* defaultBuffer
 	);
 	static size_t CaculateConstantBufferByteSize(size_t byteSize);
 	static Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(
