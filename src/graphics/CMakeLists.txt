@@ -1,4 +1,7 @@
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} sourceFiles)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/bindable sourceFiles)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/descriptor_heap sourceFiles)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/drawable sourceFiles)
 
 add_library(Graphics STATIC ${sourceFiles})
 

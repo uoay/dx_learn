@@ -1,11 +1,15 @@
 #include "DepthStencilBuffer.h"
 
+#include <directx/d3dx12.h>
+
+#include "GameException.h"
+
 DepthStencilBuffer::DepthStencilBuffer(
-	ID3D12Device& device,
-	ID3D12GraphicsCommandList& graphicsCommandList,
+	ID3D12Device* device,
+	ID3D12GraphicsCommandList* graphicsCommandList,
 	const unsigned int clientWidth,
 	const unsigned int clientHeight
-) : mViewHeap(std::make_unique<DepthStencilViewHeap>(device)) {
+) : mViewHeap(device) {
 
 	D3D12_RESOURCE_DESC dsvResourceDesc{};
 	dsvResourceDesc.Alignment = 0;
@@ -25,7 +29,7 @@ DepthStencilBuffer::DepthStencilBuffer(
 	optClear.DepthStencil.Depth = 1.0f;
 	optClear.DepthStencil.Stencil = 0;
 
-	GFX_THROW_IF_FAILED(device.CreateCommittedResource(
+	GFX_THROW_IF_FAILED(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
 		&dsvResourceDesc,
@@ -34,26 +38,26 @@ DepthStencilBuffer::DepthStencilBuffer(
 		IID_PPV_ARGS(&mBuffer)
 	));
 
-	graphicsCommandList.ResourceBarrier(
+	device->CreateDepthStencilView(
+		mBuffer.Get(),
+		nullptr,
+		mViewHeap.Get()->GetCPUDescriptorHandleForHeapStart()
+	);
+	/*
+	graphicsCommandList->ResourceBarrier(
 		1,
 		&CD3DX12_RESOURCE_BARRIER::Transition(
 			mBuffer.Get(),
 			D3D12_RESOURCE_STATE_COMMON,
 			D3D12_RESOURCE_STATE_DEPTH_WRITE
 		)
-	);
-
-	device.CreateDepthStencilView(
-		mBuffer.Get(),
-		nullptr,
-		mViewHeap->GetCPUDescriptorHandleForHeapStart()
-	);
+	);*/
 }
 
 ID3D12Resource2* DepthStencilBuffer::GetBuffer() {
 	return mBuffer.Get();
 }
 
-DepthStencilViewHeap* DepthStencilBuffer::GetDescriptorHeap() {
-	return mViewHeap.get();
+DepthStencilViewHeap& DepthStencilBuffer::GetDescriptorHeap() {
+	return mViewHeap;
 }

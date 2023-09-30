@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Graphics.h"
+#include "Vertex.h"
+
 class Mesh {
 	Mesh(
 		const Graphics& graphics,

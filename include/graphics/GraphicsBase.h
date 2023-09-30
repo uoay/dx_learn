@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "BackBuffer.h"
 #include "DepthStencilBuffer.h"
 #include "GameException.h"
@@ -9,7 +11,7 @@ public:
 	GraphicsBase(const HWND hWnd, const unsigned int clientWidth, const unsigned int clientHeight);
 	virtual void Draw() = 0;
 protected:
-	static ID3D12Device* GetDevice();
+	static ID3D12Device10* GetDevice();
 	static ID3D12CommandQueue* GetCommandQueue();
 	void FlushCommandQueue();
 	void OnResize(const unsigned int clientWidth, const unsigned int clientHeight);

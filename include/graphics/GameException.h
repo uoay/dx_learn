@@ -5,18 +5,34 @@
 
 #include <windows.h>
 
-#define WND_EXCEPTION(errorCode) GameException(L"Window Exception", TEXT(__FILE__), __LINE__, errorCode)
-#define WND_THROW_LAST_EXCEPTION() GameException(L"Window Exception" ,TEXT(__FILE__), __LINE__, GetLastError())
+#define WND_EXCEPTION(errorCode)\
+    GameException(L"Window Exception", TEXT(__FILE__), __LINE__, errorCode)
+#define WND_THROW_LAST_EXCEPTION()\
+    GameException(L"Window Exception" ,TEXT(__FILE__), __LINE__, GetLastError())
 #define GFX_THROW_IF_FAILED(hr) {\
 	if (FAILED(hr)) {\
 		throw GameException(L"Graphics Exception", TEXT(__FILE__), __LINE__, hr);\
 	}\
 }
-#define GFX_THROW_LAST_EXCEPTION() throw GameException(L"Graphics Exception", TEXT(__FILE__), __LINE__, GetLastError());
+#define GFX_THROW_LAST_EXCEPTION()\
+    throw GameException(L"Graphics Exception", TEXT(__FILE__), __LINE__, GetLastError());
+#define GFX_THROW_EXCEPTION(errorMessage)\
+    throw GameException(L"Graphics Exception", TEXT(__FILE__), __LINE__, errorMessage)
 
 class GameException : public std::exception {
 public:
-    GameException(const wchar_t* const type, const wchar_t* const file, const int line, const HRESULT errorCode);
+    GameException(
+        const wchar_t* const type,
+        const wchar_t* const file,
+        const int line,
+        const HRESULT errorCode
+    );
+    GameException(
+        const wchar_t* const type,
+        const wchar_t* const file,
+        const int line,
+        const std::wstring errorMessage
+    );
     const wchar_t* What() const noexcept;
     const wchar_t* GetType() const noexcept;
     const std::wstring& GetFile() const noexcept;
@@ -28,6 +44,8 @@ public:
 protected:
     mutable std::wstring mWhatBuffer;
 private:
+    bool mHasCustomMessage;
+    std::wstring mErrorMessage;
     std::wstring mType;
     std::wstring mFile;
     int mLine;

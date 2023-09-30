@@ -14,8 +14,6 @@ add_definitions(-DUNICODE)
 
 add_compile_options(/utf-8)
 
-#include_directories(include)
-
 add_subdirectory(external)
 
 add_subdirectory(shader)

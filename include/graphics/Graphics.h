@@ -20,4 +20,5 @@ public:
 protected:
     D3D12_VIEWPORT mViewport;
     D3D12_RECT mScissorRect;
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC mPipelineStateDesc;
 };

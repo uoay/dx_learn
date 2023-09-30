@@ -101,8 +101,8 @@ void Window::CalculateFrameState() {
 
 
 void Window::OnResize(LPARAM lParam) {
-    mClientHeight = HIWORD(lParam);
     mClientWidth = LOWORD(lParam); 
+    mClientHeight = HIWORD(lParam);
     if (mGraphics != nullptr) {
        mGraphics->OnResize(mClientWidth, mClientHeight);
     } 

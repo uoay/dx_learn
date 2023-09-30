@@ -6,8 +6,8 @@ GraphicsBase::GraphicsBase(
 	const unsigned int clientHeight
 ) : mBackBuffer(), mDepthStencilBuffer() {
 
-	ID3D12Device* device = GetDevice();
-	ID3D12CommandQueue* commandQueue = GetCommandQueue();
+	auto device = GetDevice();
+	auto commandQueue = GetCommandQueue();
 
 	GFX_THROW_IF_FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
 
@@ -49,19 +49,19 @@ GraphicsBase::GraphicsBase(
 	GFX_THROW_IF_FAILED(tmpSwapChain->QueryInterface(IID_PPV_ARGS(&mSwapChain)));
 	tmpSwapChain->Release();
 	
-	mBackBuffer = std::make_unique<BackBuffer>(*device, *mSwapChain.Get());
-
+	mBackBuffer = std::make_unique<BackBuffer>(device, mSwapChain.Get());
+	
 	mDepthStencilBuffer =
 		std::make_unique<DepthStencilBuffer>(
-			*device,
-			*mGraphicsCommandList.Get(),
+			device,
+			mGraphicsCommandList.Get(),
 			clientWidth, clientHeight
 		);
 
 	GFX_THROW_IF_FAILED(mGraphicsCommandList->Close());
 }
 
-ID3D12Device* GraphicsBase::GetDevice() {
+ID3D12Device10* GraphicsBase::GetDevice() {
 	static Microsoft::WRL::ComPtr<ID3D12Device10> sDevice;
 	if (sDevice == nullptr) {
 		GFX_THROW_IF_FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&sDevice)));
@@ -112,8 +112,11 @@ void GraphicsBase::OnResize(const unsigned int clientWidth, const unsigned int c
 		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
 	));
 
-	mBackBuffer = std::make_unique<BackBuffer>(*GetDevice(), *mSwapChain.Get());
-	mDepthStencilBuffer = std::make_unique<DepthStencilBuffer>(*GetDevice(), *mGraphicsCommandList.Get(), clientWidth, clientHeight);
+	mBackBuffer = std::make_unique<BackBuffer>(GetDevice(), mSwapChain.Get());
+	mCurrentBackBuffer = 0;
+	mDepthStencilBuffer = std::make_unique<DepthStencilBuffer>(
+		GetDevice(), mGraphicsCommandList.Get(), clientWidth, clientHeight
+	);
 
 	mGraphicsCommandList->Close();
 	ID3D12CommandList* cmdsLists[]{ mGraphicsCommandList.Get() };

@@ -60,13 +60,13 @@ void Graphics::Draw() {
 	mGraphicsCommandList->RSSetScissorRects(1, &mScissorRect);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(
-		mBackBuffer->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
+		mBackBuffer->GetDescriptorHeap().Get()->GetCPUDescriptorHandleForHeapStart(),
 		mCurrentBackBuffer,
 		GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV)
 	);
 	mGraphicsCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::LightSteelBlue, 0, nullptr);
 
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = mDepthStencilBuffer->GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = mDepthStencilBuffer->GetDescriptorHeap().Get()->GetCPUDescriptorHandleForHeapStart();
 	mGraphicsCommandList->ClearDepthStencilView(
 		dsvHandle,
 		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,

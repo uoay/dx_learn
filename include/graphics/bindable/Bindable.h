@@ -6,6 +6,6 @@
 
 class Bindable {
 public:
-	virtual void Bind(const Graphics& graphics) const noexcept = 0;
+	virtual void Bind(Graphics& graphics) const noexcept = 0;
 	virtual ~Bindable() = default;
 };

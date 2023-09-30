@@ -5,7 +5,7 @@
 class Application {
 public:
     Application();
-    int Run();
+    int Run(); 
 private:
     void DoFrame();
 private:

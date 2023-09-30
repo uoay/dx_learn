@@ -2,11 +2,30 @@
 
 #include <sstream>
 
-GameException::GameException(const wchar_t* const type, const wchar_t* const file, const int line, const HRESULT errorCode):mType(type), mFile(file), mLine(line), mErrorCode(errorCode) {}
+GameException::GameException(
+    const wchar_t* const type,
+    const wchar_t* const file,
+    const int line,
+    const HRESULT errorCode
+) : mType(type), mFile(file), mLine(line), mErrorCode(errorCode), mHasCustomMessage(false) {}
+
+GameException::GameException(
+    const wchar_t* const type,
+    const wchar_t* const file,
+    const int line,
+    const std::wstring errorMessage
+) : mType(type), mFile(file), mLine(line), mErrorCode(0),
+    mHasCustomMessage(true), mErrorMessage(errorMessage){}
 
 const wchar_t* GameException::What() const noexcept {
     std::wostringstream woss;
-    woss << GetType() << std::endl << GetExceptionLocation() << std::endl << GetErrorString();
+    woss << GetType() << std::endl << GetExceptionLocation() << std::endl;
+    if (mHasCustomMessage) {
+        woss << mErrorMessage;
+    }
+    else {
+        woss << GetErrorString();
+    }
     mWhatBuffer = woss.str();
     return mWhatBuffer.c_str();
 }
