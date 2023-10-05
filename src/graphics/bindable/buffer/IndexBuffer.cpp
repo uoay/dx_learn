@@ -1,33 +1,34 @@
-#include "bindable/IndexBuffer.h"
+#include "bindable/buffer/IndexBuffer.h"
 
 #include <d3dcompiler.h>
 
 #include "Direct3DUtil.h"
 #include "GraphicsAccessor.h"
+#include "GameException.h"
 
 IndexBuffer::IndexBuffer(
-	const Graphics& graphics,
+	Graphics& graphics,
 	const std::vector<uint16_t>& indices,
 	DXGI_FORMAT indexFormat
 ) : mIndexCount(static_cast<unsigned int>(indices.size())) {
-	const size_t ibByteSize = mIndexCount * sizeof(std::uint16_t);
+	mView.SizeInBytes = static_cast<unsigned int>(mIndexCount * sizeof(std::uint16_t));
 	
-	GFX_THROW_IF_FAILED(D3DCreateBlob(ibByteSize, &mBufferCpu));
-	memcpy(mBufferCpu->GetBufferPointer(), indices.data(), ibByteSize);
+	GFX_THROW_IF_FAILED(D3DCreateBlob(mView.SizeInBytes, &mBufferCpu));
+	memcpy(mBufferCpu->GetBufferPointer(), indices.data(), mView.SizeInBytes);
 
 	Direct3DUtil::CreateDefaultBuffer(
-		GraphicsAccessor::GetDevice(), GraphicsAccessor::GetGraphicsCommandList(graphics),
-		indices.data(), ibByteSize,
-		mBufferUploader.Get(), mBufferGpu.Get()
+		GraphicsAccessor::GetDevice(graphics), GraphicsAccessor::GetGraphicsCommandList(graphics),
+		indices.data(), mView.SizeInBytes,
+		mBufferUploader, mBufferGpu
 	);
 	
 	mView.BufferLocation = mBufferGpu->GetGPUVirtualAddress();
 	mView.Format = indexFormat;
-	mView.SizeInBytes = static_cast<unsigned int>(ibByteSize);
 }
 
 void IndexBuffer::Bind(
-	Graphics& graphics
+	Graphics& graphics,
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDesc
 ) const noexcept {
 	GraphicsAccessor::GetGraphicsCommandList(graphics)->IASetIndexBuffer(&mView);
 }

@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "GameException.h"
+#include "common/GameException.h"
 
 Window::WindowClass Window::WindowClass::mWndClass;
 
@@ -42,7 +42,7 @@ Window::Window(const int clientWidth, const int clientHeight, const wchar_t* wnd
     AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
-    mHWnd = CreateWindowW(
+    mHWnd = CreateWindow(
         WindowClass::GetWndClassName(),
         wndName,
         WS_OVERLAPPEDWINDOW,

@@ -1,17 +1,21 @@
 #include "GraphicsAccessor.h"
 
-ID3D12Device10* GraphicsAccessor::GetDevice() {
-	return Graphics::GetDevice();
+ID3D12Device10* GraphicsAccessor::GetDevice(Graphics& graphics) {
+	return graphics.mDevice.Get();
 }
 
-ID3D12CommandQueue* GraphicsAccessor::GetCommandQueue() {
-	return Graphics::GetCommandQueue();
+ID3D12CommandQueue* GraphicsAccessor::GetCommandQueue(Graphics& graphics) {
+	return graphics.mCommandQueue.Get();
 }
 
-ID3D12GraphicsCommandList7* GraphicsAccessor::GetGraphicsCommandList(const Graphics& graphics) {
-	return graphics.mGraphicsCommandList.Get();
+ID3D12GraphicsCommandList7* GraphicsAccessor::GetGraphicsCommandList(Graphics& graphics) {
+	return graphics.mCommandList.Get();
 }
 
-D3D12_GRAPHICS_PIPELINE_STATE_DESC& GraphicsAccessor::GetPipelineStateDesc(Graphics& graphics) {
-	return graphics.mPipelineStateDesc;
+ID3D12CommandAllocator* GraphicsAccessor::GetCommandAllocator(Graphics& graphics) {
+	return graphics.mCommandAllocator.Get();
+}
+
+Microsoft::WRL::ComPtr<ID3D12PipelineState>& GetPipelineState(Graphics& graphics) {
+	return graphics.mPipelineState;
 }

@@ -49,8 +49,8 @@ public:
 		ID3D12GraphicsCommandList* commandList,
 		const void* initData,
 		size_t byteSize,
-		ID3D12Resource* uploadBuffer, //uploadBuffer不能立即销毁
-		ID3D12Resource* defaultBuffer
+		Microsoft::WRL::ComPtr<ID3D12Resource2>& uploadBuffer, //uploadBuffer不能立即销毁
+		Microsoft::WRL::ComPtr<ID3D12Resource2>& defaultBuffer
 	);
 	static size_t CaculateConstantBufferByteSize(size_t byteSize);
 	static Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(

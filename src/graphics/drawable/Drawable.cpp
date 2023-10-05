@@ -4,9 +4,9 @@
 
 void Drawable::Draw(Graphics& graphics) {
 	for (auto& b : mBinds) {
-		b->Bind(graphics);
+		b->Bind(graphics, nullptr);
 	}
-	
+	GraphicsAccessor::GetGraphicsCommandList(graphics)->DrawIndexedInstanced(mIndexCount, 1, 0, 0, 0);
 }
 
 void Drawable::AddBind(std::unique_ptr<Bindable> bind) {

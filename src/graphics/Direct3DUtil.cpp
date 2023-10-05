@@ -11,8 +11,8 @@ void Direct3DUtil::CreateDefaultBuffer(
 	ID3D12GraphicsCommandList* commandList,
 	const void* initData,
 	UINT64 byteSize,
-	ID3D12Resource* uploadBuffer,
-	ID3D12Resource* defaultBuffer
+	Microsoft::WRL::ComPtr<ID3D12Resource2>& uploadBuffer,
+	Microsoft::WRL::ComPtr<ID3D12Resource2>& defaultBuffer
 ) {
 	GFX_THROW_IF_FAILED(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
@@ -34,7 +34,7 @@ void Direct3DUtil::CreateDefaultBuffer(
 	commandList->ResourceBarrier(
 		1,
 		&CD3DX12_RESOURCE_BARRIER::Transition(
-			defaultBuffer,
+			defaultBuffer.Get(),
 			D3D12_RESOURCE_STATE_COMMON,
 			D3D12_RESOURCE_STATE_COPY_DEST
 		)
@@ -45,15 +45,15 @@ void Direct3DUtil::CreateDefaultBuffer(
 	subresourceData.SlicePitch = subresourceData.RowPitch;
 	UpdateSubresources<1>(
 		commandList,
-		defaultBuffer,
-		uploadBuffer,
+		defaultBuffer.Get(),
+		uploadBuffer.Get(),
 		0, 0, 1,
 		&subresourceData
 	);
 	commandList->ResourceBarrier(
 		1,
 		&CD3DX12_RESOURCE_BARRIER::Transition(
-			defaultBuffer,
+			defaultBuffer.Get(),
 			D3D12_RESOURCE_STATE_COPY_DEST,
 			D3D12_RESOURCE_STATE_GENERIC_READ
 		)
@@ -62,4 +62,36 @@ void Direct3DUtil::CreateDefaultBuffer(
 
 size_t Direct3DUtil::CaculateConstantBufferByteSize(size_t byteSize) {
 	return (byteSize + 255) & ~255;
+}
+
+Microsoft::WRL::ComPtr<ID3DBlob> Direct3DUtil::CompileShader(
+	const std::wstring& fileName,
+	const D3D_SHADER_MACRO* defines,
+	const std::string& enteryPoint,
+	const std::string& target
+) {
+	UINT compileFlags = 0;
+#ifndef NDEBUG
+	compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+	Microsoft::WRL::ComPtr<ID3DBlob> byteCode;
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
+	HRESULT hr = D3DCompileFromFile(
+		fileName.c_str(),
+		defines,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		enteryPoint.c_str(),
+		target.c_str(),
+		compileFlags,
+		0,
+		&byteCode,
+		&errorBlob
+	);
+
+	if (errorBlob != nullptr) {
+		OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+	}
+	GFX_THROW_IF_FAILED(hr);
+
+	return byteCode;
 }

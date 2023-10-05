@@ -8,10 +8,11 @@
 class Drawable {
 public:
 	Drawable() = default;
-	void Draw(Graphics& graphics);
+	virtual void Draw(Graphics& graphics);
 	void AddBind(std::unique_ptr<Bindable> bind);
 protected:
 	unsigned int mIndexCount;
+	unsigned int mInstanceCount = 0;
 private:
 	std::vector<std::unique_ptr<Bindable>> mBinds;
 };

@@ -1,3 +1,5 @@
+add_subdirectory(common)
+
 add_subdirectory(graphics)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} sourceFiles)

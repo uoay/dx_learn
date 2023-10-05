@@ -1,7 +1,11 @@
 #include "Application.h"
-#include "Window.h"
 
-Application::Application() :mWnd(1024, 768, L"名字") {}
+#include "Window.h"
+#include "GraphicsAccessor.h"
+Application::Application() :
+    mWnd(1024, 768, L"名字"),
+    mTestBox(std::make_unique<TestBox>(mWnd.GetGraphics())) 
+{}
 
 int Application::Run() {
     mWnd.mTimer.Reset();
@@ -15,8 +19,10 @@ int Application::Run() {
 }
 
 void Application::DoFrame() {
+    mWnd.GetGraphics().BeginFrame();
     mWnd.mTimer.Tick();
     mWnd.CalculateFrameState();
-    mWnd.GetGraphics().Draw();
-    //mWnd.GetGraphics().Update(1024, 768);
+    mTestBox->Draw();
+    mTestBox->Update();
+    mWnd.GetGraphics().EndFrame();
 }

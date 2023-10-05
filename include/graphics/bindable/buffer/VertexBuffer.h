@@ -2,9 +2,10 @@
 
 #include <d3dcompiler.h>
 
-#include "../Direct3DUtil.h"
-#include "../GraphicsAccessor.h"
+#include "Direct3DUtil.h"
+#include "GraphicsAccessor.h"
 #include "Buffer.h"
+#include "GameException.h"
 
 class VertexBuffer : public Buffer {
 public:
@@ -17,16 +18,21 @@ public:
 		memcpy(mBufferCpu->GetBufferPointer(), vertices.data(), mView.SizeInBytes);
 
 		Direct3DUtil::CreateDefaultBuffer(
-			GraphicsAccessor::GetDevice(), GraphicsAccessor::GetGraphicsCommandList(graphics),
+			GraphicsAccessor::GetDevice(graphics), GraphicsAccessor::GetGraphicsCommandList(graphics),
 			vertices.data(), mView.SizeInBytes,
-			mBufferUploader.Get(), mBufferGpu.Get()
+			mBufferUploader, mBufferGpu
 		);
-
 		mView.BufferLocation = mBufferGpu->GetGPUVirtualAddress();
 	}
-	virtual void Bind(Graphics& graphics) const noexcept override {
+	virtual void Bind(
+		Graphics& graphics,
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDesc = nullptr
+	) const noexcept override {
 		GraphicsAccessor::GetGraphicsCommandList(graphics)->IASetVertexBuffers(0, 1, &mView);
 	}
 private:
 	D3D12_VERTEX_BUFFER_VIEW mView;
+	Microsoft::WRL::ComPtr<ID3DBlob> mBufferCpu;
+	Microsoft::WRL::ComPtr<ID3D12Resource2> mBufferUploader;
+	Microsoft::WRL::ComPtr<ID3D12Resource2> mBufferGpu;
 };
